@@ -27,7 +27,7 @@ class Tcp_server:
         self._server.setblocking(False)
 
         self._is_server_running = True
-        print(f">>> Server listening on [{host}:{port}]")
+        print(f">>> Server listening on [{host or "localhost"}:{port}]")
 
         signal(SIGINT, self.stop_server)
 
@@ -72,7 +72,7 @@ class Tcp_server:
         """
         print(">>> Stopping server...")
 
-        self.is_server_running = False
+        self._is_server_running = False
 
         self._package_listener_thread.join()
         self._server.close()
