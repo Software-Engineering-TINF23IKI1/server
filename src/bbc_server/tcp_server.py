@@ -1,6 +1,6 @@
 from tcp_client import Tcp_client
 from signal import signal, SIGINT
-from socket import socket
+from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep
 from threading import Thread
 
@@ -21,7 +21,7 @@ class Tcp_server:
             host (str): the host submask to start the server on (To allow global traffic, use '0.0.0.0')
             port (int): the port the server listens on
         """
-        self._server = socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._server = socket(AF_INET, SOCK_STREAM)
         self._server.bind((host, port))
         self._server.listen()
         self._server.setblocking(False)
