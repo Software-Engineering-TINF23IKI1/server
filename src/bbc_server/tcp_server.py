@@ -1,93 +1,88 @@
-from threading import Thread
-from time import sleep
-import socket
+from tcp_client import Tcp_client
 from signal import signal, SIGINT
+from socket import socket
+from time import sleep
+from threading import Thread
 
-import os
-import pathlib
-import sys
-
-here = pathlib.Path(__file__).parent
+# Evil python module hack
+from pathlib import Path
+from sys import path as sys_path
+from os import path as os_path
+here = Path(__file__).parent
 repo_root_dir = here.parent
-
-sys.path.insert(0, os.path.join(repo_root_dir / "src" / "bbc_server"))
-sys.path.insert(0, os.path.join(repo_root_dir))
-
-from bbc_server import CONFIG
+sys_path.insert(0, os_path.join(repo_root_dir / "src" / "bbc_server"))
+sys_path.insert(0, os_path.join(repo_root_dir))
 
 class Tcp_server:
-    def __init__(self, HOST : str, PORT : int):
-        self.tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_server.bind((HOST, PORT))
-        self.tcp_server.listen()
-        self.tcp_server.setblocking(False)
-
-        self.is_server_running = True
-        self.active_clients = []
-        print(f">>> Server listening on port [{PORT}]")
-
-        # Add Ctl-C Handler
-        signal(SIGINT, self.stop_server)
-
-        # Start connection listener
-        self.connection_listener_thread = Thread(target = self.connection_listener)
-        self.connection_listener_thread.start()
-
-        self.server_listener()
-    
-    def server_listener(self):
-        # Main client read loop
-        while self.is_server_running:
-            for tcp_client, client_address in self.active_clients:
-                try:
-                    # Read data from client
-                    data = tcp_client.recv(1024).strip()
-                    if not data: raise ConnectionResetError()
-                except ConnectionResetError: # Client disconnected
-                    self.active_clients.remove((tcp_client, client_address))
-                    print(f">>> Client [{client_address}] lost connection")
-                    continue
-                except BlockingIOError: # No data available
-                    continue
-
-                # Handle data
-                print(f"[{client_address}] {data.decode()}")
-                # just send back the same data, but upper-cased
-                tcp_client.sendall(data.upper())
-
-            sleep(1)
-
-    def connection_listener(self):
-        """The listener accepting new connections to the server.
-        """
-        while self.is_server_running:
-            try:
-                (tcp_client, client_address) = self.tcp_server.accept()
-                print(f">>> Handling new client from [{client_address}]")
-                tcp_client.setblocking(False)
-                self.active_clients.append((tcp_client, client_address))
-            except BlockingIOError: # No new client available
-                sleep(1)
-
-    def stop_server(self, signum, frame):
-        """This method is executed on Ctr-C. 
-        It will shut down the server.
+    def __init__(self, host: str, port: int):
+        """Creates and starts a Tcp_server on the provided host and port
 
         Args:
-            signum: value needed for Ctr-C interception
-            frame: value needed for Ctr-C interception
+            host (str): the host submask to start the server on (To allow global traffic, use '0.0.0.0')
+            port (int): the port the server listens on
+        """
+        self._server = socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._server.bind((host, port))
+        self._server.listen()
+        self._server.setblocking(False)
+
+        self._is_server_running = True
+        print(f">>> Server listening on [{host}:{port}]")
+
+        signal(SIGINT, self.stop_server)
+
+        self.players = []
+
+        self._package_listener_thread = Thread(target=self._package_listener)
+        self._package_listener_thread.start()
+
+        self._connection_listener()
+
+    def _connection_listener(self):
+        """Loop listening for new client connections
+        """
+        while self._is_server_running:
+            try:
+                (client, address) = self._server.accept()
+                print(f">>> Handling new client from [{address}]")
+                self.players.append(Tcp_client(client, address))
+            except BlockingIOError:
+                sleep(1)
+
+    def _package_listener(self):
+        """Loop listening for packages on the players currently assigned to the Tcp_server
+        """
+        while self._is_server_running:
+            for player in self.players:
+                if not player.has_content():
+                    continue
+
+                package = player.read_string()
+                print(f"[{player.address}] {package}")
+                player.send_string(package.upper())
+
+            sleep(0.2)
+
+    def stop_server(self, signum, frame):
+        """Stops the Tcp_server and the running threads on Ctrl-C
+
+        Args:
+            signum : Value needed for Ctrl-C interception
+            frame : Value needed for Ctrl-C interception
         """
         print(">>> Stopping server...")
-        # Sets running server variable to false
+
         self.is_server_running = False
 
-        # Stop all running server processes
-        self.connection_listener_thread.join()
-        self.tcp_server.close()
-        print(">>> Server sucesfully closed!")
+        self._package_listener_thread.join()
+        self._server.close()
+
+        print(">>> Server sucessfully closed!")
+
 
 if __name__ == "__main__":
-    HOST = CONFIG.get("server", "HOST")
-    PORT = int(CONFIG.get("server", "PORT").strip())
+    from bbc_server import CONFIG
+    host = CONFIG.get("server", "HOST")
+    port = int(CONFIG.get("server", "PORT").strip() or "0")
 
-    Tcp_server(HOST, PORT)
+    Tcp_server(host, port)
