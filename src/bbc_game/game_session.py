@@ -1,7 +1,7 @@
 from bbc_game.game_state import GameState
 from bbc_game.game_code import generate_game_code, unregister_game_code
 
-class Game_session:
+class GameSession:
     def __init__(self):
         """Generates a new empty game session with a newly generated game code
         """
