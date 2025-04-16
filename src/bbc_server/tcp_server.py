@@ -1,19 +1,10 @@
-from tcp_client import Tcp_client
-from signal import signal, SIGINT
-from socket import socket, AF_INET, SOCK_STREAM
-from time import sleep
+from bbc_server.tcp_client import TcpClient
 from threading import Thread
+from time import sleep
+import signal
+import socket
 
-# Evil python module hack
-from pathlib import Path
-from sys import path as sys_path
-from os import path as os_path
-here = Path(__file__).parent
-repo_root_dir = here.parent
-sys_path.insert(0, os_path.join(repo_root_dir / "src" / "bbc_server"))
-sys_path.insert(0, os_path.join(repo_root_dir))
-
-class Tcp_server:
+class TcpServer:
     def __init__(self, host: str, port: int):
         """Creates and starts a Tcp_server on the provided host and port
 
@@ -21,7 +12,7 @@ class Tcp_server:
             host (str): the host submask to start the server on (To allow global traffic, use '0.0.0.0')
             port (int): the port the server listens on
         """
-        self._server = socket(AF_INET, SOCK_STREAM)
+        self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server.bind((host, port))
         self._server.listen()
         self._server.setblocking(False)
@@ -29,7 +20,7 @@ class Tcp_server:
         self._is_server_running = True
         print(f">>> Server listening on [{host or "localhost"}:{port}]")
 
-        signal(SIGINT, self.stop_server)
+        signal.signal(signal.SIGINT, self.stop_server)
 
         self.players = []
 
@@ -45,7 +36,7 @@ class Tcp_server:
             try:
                 (client, address) = self._server.accept()
                 print(f">>> Handling new client from [{address}]")
-                self.players.append(Tcp_client(client, address))
+                self.players.append(TcpClient(client, address))
             except BlockingIOError:
                 sleep(1)
 
@@ -85,4 +76,4 @@ if __name__ == "__main__":
     host = CONFIG.get("server", "HOST")
     port = int(CONFIG.get("server", "PORT").strip() or "0")
 
-    Tcp_server(host, port)
+    TcpServer(host, port)

@@ -1,20 +1,20 @@
-from socket import socket, AddressInfo
+import socket
 
-class Tcp_client:
+class TcpClient:
     PACKET_SEPERATOR = '\x1E'
 
-    def __init__(self, client: socket, address: AddressInfo):
+    def __init__(self, client: socket.socket, address: socket.AddressInfo):
         """Creates a Tcp_client object from a given tcp socket and connection address
 
         Args:
             client (socket): the socket used for this connection
-            address (AddressInfo): the address of this connection
+            address (socket.AddressInfo): the address of this connection
         """
         self._client = client
         self._client.setblocking(False)
         self.address = address
 
-        self._text = ""
+        self._text = ""  # A storage to hold read but not yet parsed text from the client
         self._package_queue = list()
         self._is_running = True
 
@@ -31,7 +31,7 @@ class Tcp_client:
             return True
 
         try:
-            while Tcp_client.PACKET_SEPERATOR not in self._text:
+            while TcpClient.PACKET_SEPERATOR not in self._text:
                 data = self._client.recv(1024)
                 self._text += data.decode()
         except ConnectionResetError:
@@ -41,7 +41,7 @@ class Tcp_client:
         except BlockingIOError:
             return False
 
-        packages = self._text.split(Tcp_client.PACKET_SEPERATOR)
+        packages = self._text.split(TcpClient.PACKET_SEPERATOR)
         self._package_queue.extend(packages[:-1])
         self._text = packages[-1]
 
@@ -67,4 +67,4 @@ class Tcp_client:
         if not self._is_running:
             return
 
-        self._client.sendall((content + Tcp_client.PACKET_SEPERATOR).encode())
+        self._client.sendall((content + TcpClient.PACKET_SEPERATOR).encode())
