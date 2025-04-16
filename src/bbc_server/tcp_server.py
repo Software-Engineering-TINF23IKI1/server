@@ -1,6 +1,6 @@
 from bbc_server.tcp_client import TcpClient
 from threading import Thread
-from time import sleep
+import time
 import signal
 import socket
 
@@ -38,7 +38,7 @@ class TcpServer:
                 print(f">>> Handling new client from [{address}]")
                 self.players.append(TcpClient(client, address))
             except BlockingIOError:
-                sleep(1)
+                time.sleep(1)
 
     def _package_listener(self):
         """Loop listening for packages on the players currently assigned to the Tcp_server
@@ -52,7 +52,7 @@ class TcpServer:
                 print(f"[{player.address}] {package}")
                 player.send_string(package.upper())
 
-            sleep(0.2)
+            time.sleep(0.2)
 
     def stop_server(self, signum, frame):
         """Stops the Tcp_server and the running threads on Ctrl-C
