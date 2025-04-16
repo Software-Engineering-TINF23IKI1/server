@@ -1,5 +1,5 @@
-from game_status import Game_state
-from game_code import generate_game_code, unregister_game_code
+from bbc_game.game_state import GameState
+from bbc_game.game_code import generate_game_code, unregister_game_code
 
 class Game_session:
     def __init__(self):
@@ -7,7 +7,7 @@ class Game_session:
         """
         self.code = generate_game_code()
         self.players = []
-        self.state = Game_state.Preperation
+        self.state = GameState.Preperation
 
         self.point_earn_system = None
         self.end_condition = None
@@ -24,7 +24,7 @@ class Game_session:
         Returns:
             bool: whether the player could be added to the game session scope
         """
-        if self.state != Game_state.Preperation:
+        if self.state != GameState.Preperation:
             return False
 
         self.players.append(player)
