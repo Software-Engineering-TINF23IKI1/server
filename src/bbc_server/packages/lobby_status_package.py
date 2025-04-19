@@ -4,6 +4,16 @@ class LobbyStatusPackage(BasePackage):
     PACKAGE_TYPE = "lobby-status"
 
     def __init__(self, gamecode: str, players: list[dict]):
+        """LobbyStatusPackage
+        see the package documentation for more information
+
+        Args:
+            gamecode (str): gamecode
+            players (list[dict]): list of players with their readiness status
+
+        Raises:
+            ValueError: _description_
+        """
         self.__gamecode = gamecode
         if not self.is_player_list_valid(players):
             raise ValueError("player list is not valid")
@@ -21,7 +31,7 @@ class LobbyStatusPackage(BasePackage):
             bool: flag
         """
         keys = {"playername", "is-ready"}
-        return all([set(player.keys()) == keys for player in players])
+        return all(set(player.keys()) == keys for player in players)
 
     def _generate_body_dict(self) -> dict:
         dict_repr = {

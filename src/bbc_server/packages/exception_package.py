@@ -4,6 +4,13 @@ class ExceptionPackage(BasePackage):
     PACKAGE_TYPE = "exception"
 
     def __init__(self, name: str, details: dict):
+        """ExceptionPackage
+        see the package documentation for more information
+
+        Args:
+            name (str): name of the exception
+            details (dict): dict with more information
+        """
         self.__name = name
         self.__details = details
 

@@ -6,6 +6,14 @@ class GameUpdatePackage(BasePackage):
     N_TOP_PLAYERS = 5  # amount of players to show in the leaderboard
 
     def __init__(self, currency: float, score: float, top_players: list[dict]):
+        """GameUpdatePackage
+        see the package documentation for more information
+
+        Args:
+            currency (float): currency of the player
+            score (float): score of the player
+            top_players (list[dict]): list of top N players with their respective scores
+        """
         self.__currency = currency
         self.__score = score
         if not self.is_top_player_list_valid(top_players):
@@ -24,8 +32,8 @@ class GameUpdatePackage(BasePackage):
             bool: flag
         """
         keys = {"playername", "score"}
-        keys_valid = all([set(player.keys()) == keys for player in players])
-        length_valid = (len(players) < self.N_TOP_PLAYERS)
+        keys_valid = all(set(player.keys()) == keys for player in players)
+        length_valid = (len(players) <= self.N_TOP_PLAYERS)
         return keys_valid and length_valid
 
     def _generate_body_dict(self) -> dict:

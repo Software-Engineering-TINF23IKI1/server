@@ -4,6 +4,12 @@ class StatusUpdatePackage(BasePackage):
     PACKAGE_TYPE = "status-update"
 
     def __init__(self, is_ready: bool):
+        """StatusUpdatePackage
+        see the package documentation for more information
+
+        Args:
+            is_ready (bool): readiness status
+        """
         self.__is_ready = is_ready
 
     def _generate_body_dict(self) -> dict:

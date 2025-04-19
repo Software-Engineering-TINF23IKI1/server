@@ -4,6 +4,13 @@ class ConnectToGameSessionPackage(BasePackage):
     PACKAGE_TYPE = "connect-to-game-session"
 
     def __init__(self, gamecode: str, playername: str):
+        """ConnectToGameSessionPackage
+        see the package documentation for more information
+
+        Args:
+            gamecode (str): the gamecode (validation is performed at a later stage)
+            playername (str): playername
+        """
         self.__gamecode = gamecode
         self.__playername = playername
 

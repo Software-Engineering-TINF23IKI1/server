@@ -4,9 +4,17 @@ class EndRoutinePackage(BasePackage):
     PACKAGE_TYPE = "end-routine"
 
     def __init__(self, score: float, is_winner: bool, scoreboard: list[dict]):
+        """EndRoutinePackage
+        see the package documentation for more information
+
+        Args:
+            score (float): player score
+            is_winner (bool): flag if the targetted user is the winner
+            scoreboard (list[dict]): list of players with their respective scores
+        """
         self.__score = score
         self.__is_winner = is_winner
-        if not self.is_top_player_list_valid(scoreboard):
+        if not self.is_scoreboard_valid(scoreboard):
             raise ValueError("player list is not valid")
         self.__scoreboard = scoreboard
 
@@ -22,7 +30,7 @@ class EndRoutinePackage(BasePackage):
             bool: flag
         """
         keys = {"playername", "score"}
-        keys_valid = all([set(player.keys()) == keys for player in scoreboard])
+        keys_valid = all(set(player.keys()) == keys for player in scoreboard)
         return keys_valid
 
     def _generate_body_dict(self) -> dict:

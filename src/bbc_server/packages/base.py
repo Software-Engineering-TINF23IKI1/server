@@ -4,6 +4,8 @@ import json
 
 
 class EnsurePackageType(ABCMeta):
+    """helper class for ensuring all packages have a PACKAGE_TYPE ClassVar
+    """
     def __init__(cls, name, bases, namespace):
         super().__init__(name, bases, namespace)
         if cls.__name__ != 'BasePackage' and 'PACKAGE_TYPE' not in cls.__dict__:
@@ -11,9 +13,16 @@ class EnsurePackageType(ABCMeta):
 
 
 class BasePackage(metaclass=EnsurePackageType):
+    """base class for all package classes
+    """
 
     @abstractmethod
     def _generate_body_dict(self) -> dict:
+        """method for generating the dictionairy representing the body of the package
+
+        Returns:
+            dict: the body dict
+        """
         pass
 
     def to_json(self) -> str:
