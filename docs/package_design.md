@@ -33,11 +33,11 @@ packages sent from client to server
 | Package Type                                        | Game Stage  | Sent On    | Max Times Sent |
 |-----------------------------------------------------|-------------|------------|----------------|
 | [start-game-session](#start-game-session)           | before game | event      | 1              |
-| [connect-to-game-session](#connect-to-game-session) | before game | event      | 1*             |
+| [connect-to-game-session](#connect-to-game-session) | before game | event      | 1[^1]          |
 | [status-update](#status-update)                     | lobby       | event      | N              |
 | [player-clicks](#player-clicks)                     | game        | periodical | N              |
 
-* package can be sent N times but only once succefully.
+[^1]: package can be sent N times but only once succefully.
 
 </details>
 
