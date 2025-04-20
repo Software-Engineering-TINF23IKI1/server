@@ -1,4 +1,6 @@
 import socket
+from bbc_server._typing import BBCPackage
+from bbc_server.packages import Decoder
 
 class TcpClient:
     PACKET_SEPERATOR = '\x1E'
@@ -68,3 +70,9 @@ class TcpClient:
             return
 
         self._client.sendall((content + TcpClient.PACKET_SEPERATOR).encode())
+
+    def read_package(self) -> BBCPackage:
+        return Decoder.deserialize(self.read_string())
+    
+    def send_package(self, package: BBCPackage) -> None:
+        self.send_string(package.to_json())

@@ -24,7 +24,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     while True:
         msg = input()
 
-        s.sendall(str.encode(msg))
+        s.sendall(str.encode(msg + "\x1E"))
         print(f"Send [\"{msg}\"] to server!")
 
         data = s.recv(1024)
