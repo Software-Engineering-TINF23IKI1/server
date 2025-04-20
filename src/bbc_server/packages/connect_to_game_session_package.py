@@ -2,6 +2,10 @@ from bbc_server.packages import BasePackage
 
 class ConnectToGameSessionPackage(BasePackage):
     PACKAGE_TYPE = "connect-to-game-session"
+    JSON_PARAM_MAP = {
+        "gamecode": "gamecode",
+        "playername": "playername"
+    }
 
     def __init__(self, gamecode: str, playername: str):
         """ConnectToGameSessionPackage

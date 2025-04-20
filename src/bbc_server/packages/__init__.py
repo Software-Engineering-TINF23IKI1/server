@@ -9,3 +9,17 @@ from bbc_server.packages.player_clicks_package import PlayerClicksPackage
 from bbc_server.packages.start_game_session_package import StartGameSessionPackage
 from bbc_server.packages.status_update_package import StatusUpdatePackage
 
+PACKAGE_DICT = {
+    "connect-to-game-session": ConnectToGameSessionPackage,
+    "end-routine": EndRoutinePackage,
+    "exception": ExceptionPackage,
+    "game-start": GameStartPackage,
+    "game-update": GameUpdatePackage,
+    "lobby-status": LobbyStatusPackage,
+    "player-clicks": PlayerClicksPackage,
+    "start-game-session": StartGameSessionPackage,
+    "status-update": StatusUpdatePackage
+}
+
+
+from bbc_server.packages import decoder as Decoder

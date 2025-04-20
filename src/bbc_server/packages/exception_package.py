@@ -2,6 +2,10 @@ from bbc_server.packages import BasePackage
 
 class ExceptionPackage(BasePackage):
     PACKAGE_TYPE = "exception"
+    JSON_PARAM_MAP = {
+        "name": "name",
+        "details": "details"
+    }
 
     def __init__(self, name: str, details: dict):
         """ExceptionPackage

@@ -2,6 +2,9 @@ from bbc_server.packages import BasePackage
 
 class PlayerClicksPackage(BasePackage):
     PACKAGE_TYPE = "player-clicks"
+    JSON_PARAM_MAP = {
+        "count": "count"
+    }
 
     def __init__(self, count: int):
         """PlayerClicksPackage
