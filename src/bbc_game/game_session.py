@@ -1,5 +1,6 @@
 from bbc_game.game_state import GameState
 from bbc_game.game_code import generate_game_code, unregister_game_code
+from threading import Thread
 from time import sleep
 
 class GameSession:
@@ -14,7 +15,9 @@ class GameSession:
         self.end_condition = None
         self.shop = None
 
-        self.lobby_loop()  # Start the game lobby loop
+        # Start the game lobby loop
+        self.thread = Thread(target=self.lobby_loop)
+        self.thread.start()
 
     def lobby_loop(self):
         while True:
