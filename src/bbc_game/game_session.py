@@ -20,7 +20,7 @@ class GameSession:
         self.thread.start()
 
     def lobby_loop(self):
-        while True:
+        while self.state is GameState.Preperation:
             for player in self.players:
                 pass  # If has package: interpret package content
 
