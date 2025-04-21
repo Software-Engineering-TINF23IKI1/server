@@ -1,4 +1,5 @@
 from bbc_server.tcp_client import TcpClient
+from bbc_game.game_session import GameSession
 from threading import Thread
 import time
 import signal
@@ -23,6 +24,7 @@ class TcpServer:
         signal.signal(signal.SIGINT, self.stop_server)
 
         self.players = []
+        self.game_sessions = {}
 
         self._package_listener_thread = Thread(target=self._package_listener)
         self._package_listener_thread.start()
@@ -48,6 +50,11 @@ class TcpServer:
                 if not player.has_content():
                     continue
 
+                if False:  # Creates a new game session and adds the current player to the session
+                    session = self.create_game_session()
+                    session.add_player(player)
+                    self.players.remove(player)
+
                 package = player.read_string()
                 print(f"[{player.address}] {package}")
                 player.send_string(package.upper())
@@ -69,6 +76,16 @@ class TcpServer:
         self._server.close()
 
         print(">>> Server sucessfully closed!")
+
+    def create_game_session(self) -> GameSession:
+        """Creates a new game session and adds it to the game session dictionary
+
+        Returns:
+            GameSession: The newly created game session
+        """
+        session = GameSession()
+        self.game_sessions[session.code] = session
+        return session
 
 
 if __name__ == "__main__":
