@@ -74,13 +74,13 @@ class TcpServer:
         self._is_server_running = False
 
         for session in self.game_sessions.values():
+            print(f">>> Killing game session [{session.code}]...")
             session.state = GameState.Kill
             session.thread.join()
 
         # Stop package listener
+        print(">>> Killing main tcp server...")
         self._package_listener_thread.join()
-
-        # Close server
         self._server.close()
 
         print(">>> Server sucessfully closed!")
@@ -93,6 +93,7 @@ class TcpServer:
         """
         session = GameSession()
         self.game_sessions[session.code] = session
+        print(f">>> Created new game session with code [{session.code}]")
         return session
 
 
