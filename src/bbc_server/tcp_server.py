@@ -1,5 +1,6 @@
 from bbc_server.tcp_client import TcpClient
 from bbc_game.game_session import GameSession
+from bbc_game.game_state import GameState
 from threading import Thread
 import time
 import signal
@@ -72,7 +73,14 @@ class TcpServer:
 
         self._is_server_running = False
 
+        for session in self.game_sessions.values():
+            session.state = GameState.Kill
+            session.thread.join()
+
+        # Stop package listener
         self._package_listener_thread.join()
+
+        # Close server
         self._server.close()
 
         print(">>> Server sucessfully closed!")
