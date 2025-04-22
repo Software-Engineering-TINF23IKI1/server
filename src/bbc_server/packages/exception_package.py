@@ -33,3 +33,12 @@ class ExceptionPackage(BasePackage):
     def details(self) -> dict:
         return self.__details
 
+
+class PackageParsingExceptionPackage(ExceptionPackage):
+    """Wrapper Class for Package Parsing Exceptions"""
+    def __init__(self, stage: str, details: dict):
+        details = {
+            "stage": stage,
+            **details
+        }
+        super().__init__("PackageParsingException", details)

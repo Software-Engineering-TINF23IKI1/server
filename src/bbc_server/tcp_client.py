@@ -1,6 +1,8 @@
 import socket
 from bbc_server._typing import BBCPackage
-from bbc_server.packages import Decoder
+from bbc_server.packages import Decoder, PackageParsingExceptionPackage
+from json import JSONDecodeError
+from bbc_server.exceptions import InvalidPackageTypeException, InvalidBodyException
 
 class TcpClient:
     PACKET_SEPERATOR = '\x1E'
@@ -72,7 +74,23 @@ class TcpClient:
         self._client.sendall((content + TcpClient.PACKET_SEPERATOR).encode())
 
     def read_package(self) -> BBCPackage:
-        return Decoder.deserialize(self.read_string())
+        try:
+            return Decoder.deserialize(self.read_string())
+        except JSONDecodeError as e:
+            details = {
+                "raw_msg": str(e)
+            }
+            self.send_package(PackageParsingExceptionPackage(stage="JSON", details=details))
+        except InvalidPackageTypeException as e:
+            details = {
+                "raw_msg": str(e)
+            }
+            self.send_package(PackageParsingExceptionPackage(stage="Type", details=details))
+        except InvalidBodyException as e:
+            details = {
+                "raw_msg": str(e)
+            }
+            self.send_package(PackageParsingExceptionPackage(stage="Body", details=details))
     
     def send_package(self, package: BBCPackage) -> None:
         self.send_string(package.to_json())

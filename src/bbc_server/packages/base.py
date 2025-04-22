@@ -13,9 +13,9 @@ class EnsurePackageType(ABCMeta):
     """
     def __init__(cls, name, bases, namespace):
         super().__init__(name, bases, namespace)
-        if cls.__name__ != 'BasePackage' and 'PACKAGE_TYPE' not in cls.__dict__:
+        if cls.__name__ != "BasePackage" and not hasattr(cls, "PACKAGE_TYPE"):
             raise NotImplementedError("Packages must set PACKAGE_TYPE class var")
-        if cls.__name__ != 'BasePackage' and 'JSON_PARAM_MAP' not in cls.__dict__:
+        if cls.__name__ != "BasePackage" and not hasattr(cls, "JSON_PARAM_MAP"):
             raise NotImplementedError("Packages must set JSON_PARAM_MAP class var")
 
 
