@@ -51,7 +51,8 @@ class TcpServer:
                 package = player.read_package()
 
                 # package = player.read_string()
-                print(f"[{player.address}] {package.to_json()}")
+                if package:
+                    print(f"[{player.address}] {package.to_json()}")
                 player.send_string("confirmation")
 
             time.sleep(0.2)

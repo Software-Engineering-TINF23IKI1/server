@@ -85,7 +85,7 @@ class TcpClient:
             details = {
                 "raw_msg": str(e)
             }
-            self.send_package(PackageParsingExceptionPackage(stage="Type", details=details))
+            self.send_package(PackageParsingExceptionPackage(stage="Package-Type", details=details))
         except InvalidBodyException as e:
             details = {
                 "raw_msg": str(e)
