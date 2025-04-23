@@ -24,10 +24,10 @@ class TcpServer:
 
         self.players = []
 
-        self._package_listener_thread = Thread(target=self._package_listener)
+        self._package_listener_thread = Thread(target=self._connection_listener)
         self._package_listener_thread.start()
 
-        self._connection_listener()
+        self._package_listener()
 
     def _connection_listener(self):
         """Loop listening for new client connections
@@ -53,7 +53,7 @@ class TcpServer:
                 # package = player.read_string()
                 if package:
                     print(f"[{player.address}] {package.to_json()}")
-                player.send_string("confirmation")
+                    player.send_string("confirmation")
 
             time.sleep(0.2)
 

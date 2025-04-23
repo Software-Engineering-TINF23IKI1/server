@@ -37,8 +37,10 @@ class TcpClient:
         try:
             while TcpClient.PACKET_SEPERATOR not in self._text:
                 data = self._client.recv(1024)
+                if not data:
+                    raise ConnectionAbortedError()
                 self._text += data.decode()
-        except ConnectionResetError:
+        except (ConnectionResetError, ConnectionAbortedError):
             self._is_running = False
             print(f">>> client [{self.address}] lost connection")
             return False
@@ -71,7 +73,11 @@ class TcpClient:
         if not self._is_running:
             return
 
-        self._client.sendall((content + TcpClient.PACKET_SEPERATOR).encode())
+        try:
+            self._client.sendall((content + TcpClient.PACKET_SEPERATOR).encode())
+        except (ConnectionResetError, ConnectionAbortedError):
+            print(f">>> client [{self.address}] lost connection")
+            self._is_running = False
 
     def read_package(self) -> BBCPackage:
         try:
@@ -91,6 +97,6 @@ class TcpClient:
                 "raw_msg": str(e)
             }
             self.send_package(PackageParsingExceptionPackage(stage="Body", details=details))
-    
+
     def send_package(self, package: BBCPackage) -> None:
         self.send_string(package.to_json())
