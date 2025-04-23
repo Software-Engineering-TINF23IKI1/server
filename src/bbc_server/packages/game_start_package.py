@@ -2,6 +2,7 @@ from bbc_server.packages import BasePackage
 
 class GameStartPackage(BasePackage):
     PACKAGE_TYPE = "game-start"
+    JSON_PARAM_MAP = {}
 
     def __init__(self):
         """GameStartPackage

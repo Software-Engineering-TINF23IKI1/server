@@ -20,7 +20,7 @@ class TcpServer:
         self._server.setblocking(False)
 
         self._is_server_running = True
-        print(f">>> Server listening on [{host or "localhost"}:{port}]")
+        print(f">>> Server listening on [{host or 'localhost'}:{port}]")
 
         signal.signal(signal.SIGINT, self.stop_server)
 
@@ -56,9 +56,11 @@ class TcpServer:
                     session.add_player(player)
                     self.players.remove(player)
 
-                package = player.read_string()
-                print(f"[{player.address}] {package}")
-                player.send_string(package.upper())
+                package = player.read_package()
+
+                if package:
+                    print(f"[{player.address}] {package.to_json()}")
+                    player.send_string("confirmation")
 
             time.sleep(0.2)
 
@@ -70,6 +72,8 @@ class TcpServer:
             frame : Value needed for Ctrl-C interception
         """
         print(">>> Stopping server...")
+        for player in self.players:
+            player.send_string("server is shutting down.")
 
         self._is_server_running = False
 

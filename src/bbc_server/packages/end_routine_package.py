@@ -2,6 +2,11 @@ from bbc_server.packages import BasePackage
 
 class EndRoutinePackage(BasePackage):
     PACKAGE_TYPE = "end-routine"
+    JSON_PARAM_MAP = {
+        "score": "score",
+        "is-winner": "is_winner",
+        "scoreboard": "scoreboard"
+    }
 
     def __init__(self, score: float, is_winner: bool, scoreboard: list[dict]):
         """EndRoutinePackage

@@ -1,4 +1,9 @@
 import socket
+from typing import Optional
+from bbc_server._typing import BBCPackage
+from bbc_server.packages import Decoder, PackageParsingExceptionPackage
+from json import JSONDecodeError
+from bbc_server.exceptions import InvalidPackageTypeException, InvalidBodyException
 
 class TcpClient:
     PACKET_SEPERATOR = '\x1E'
@@ -33,8 +38,10 @@ class TcpClient:
         try:
             while TcpClient.PACKET_SEPERATOR not in self._text:
                 data = self._client.recv(1024)
+                if not data:
+                    raise ConnectionAbortedError()
                 self._text += data.decode()
-        except ConnectionResetError:
+        except (ConnectionResetError, ConnectionAbortedError):
             self._is_running = False
             print(f">>> client [{self.address}] lost connection")
             return False
@@ -67,4 +74,43 @@ class TcpClient:
         if not self._is_running:
             return
 
-        self._client.sendall((content + TcpClient.PACKET_SEPERATOR).encode())
+        try:
+            self._client.sendall((content + TcpClient.PACKET_SEPERATOR).encode())
+        except (ConnectionResetError, ConnectionAbortedError):
+            print(f">>> client [{self.address}] lost connection")
+            self._is_running = False
+
+    def read_package(self) -> Optional[BBCPackage]:
+        """read a package if available
+        If a package is invalid the next package is automatically read.
+
+        Returns:
+            Optional[BBCPackage]: input package
+        """
+        while self.has_content():
+            try:
+                return Decoder.deserialize(self.read_string())
+            except JSONDecodeError as e:
+                details = {
+                    "raw_msg": str(e)
+                }
+                self.send_package(PackageParsingExceptionPackage(stage="JSON", details=details))
+            except InvalidPackageTypeException as e:
+                details = {
+                    "raw_msg": str(e)
+                }
+                self.send_package(PackageParsingExceptionPackage(stage="Package-Type", details=details))
+            except InvalidBodyException as e:
+                details = {
+                    "raw_msg": str(e)
+                }
+                self.send_package(PackageParsingExceptionPackage(stage="Body", details=details))
+
+
+    def send_package(self, package: BBCPackage) -> None:
+        """send package to the Client
+
+        Args:
+            package (BBCPackage): _description_
+        """
+        self.send_string(package.to_json())
