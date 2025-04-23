@@ -42,6 +42,7 @@ class GameSession:
         if self.state != GameState.Preperation:
             return False
 
+        print(f">>> Player [{player.address}] joined Session [{self.code}]")
         self.players.append(player)
         return True
 

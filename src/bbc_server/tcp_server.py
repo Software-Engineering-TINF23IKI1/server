@@ -1,3 +1,4 @@
+from bbc_server.packages import StartGameSessionPackage
 from bbc_server.tcp_client import TcpClient
 from bbc_game.game_session import GameSession
 from bbc_game.game_state import GameState
@@ -51,14 +52,15 @@ class TcpServer:
                 if not player.has_content():
                     continue
 
-                if False:  # Creates a new game session and adds the current player to the session
+                if not (package := player.read_package()):
+                    continue
+
+                if isinstance(package, StartGameSessionPackage):
+                    # Creates a new game session and adds the current player to the session
                     session = self.create_game_session()
                     session.add_player(player)
                     self.players.remove(player)
-
-                package = player.read_package()
-
-                if package:
+                else:
                     print(f"[{player.address}] {package.to_json()}")
                     player.send_string("confirmation")
 
