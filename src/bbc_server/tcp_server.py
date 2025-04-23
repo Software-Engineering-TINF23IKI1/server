@@ -1,4 +1,4 @@
-from bbc_server.packages import StartGameSessionPackage
+from bbc_server.packages import StartGameSessionPackage, ConnectToGameSessionPackage, InvalidGameCodeExceptionPackage
 from bbc_server.tcp_client import TcpClient
 from bbc_game.game_session import GameSession
 from bbc_game.game_state import GameState
@@ -56,12 +56,19 @@ class TcpServer:
 
                 if isinstance(package, StartGameSessionPackage):
                     # Creates a new game session and adds the current player to the session
+                    player.name = package.playername
                     session = self.create_game_session()
                     session.add_player(player)
                     self.players.remove(player)
+                elif isinstance(package, ConnectToGameSessionPackage):
+                    if package.gamecode in self.game_sessions.keys():
+                        player.name = package.playername
+                        self.game_sessions[package.gamecode].add_player(player)
+                        self.players.remove(player)
+                    else:
+                        player.send_package(InvalidGameCodeExceptionPackage(package.gamecode))
                 else:
-                    print(f"[{player.address}] {package.to_json()}")
-                    player.send_string("confirmation")
+                    print(f"[{player.client.address}] {package.to_json()}")
 
 
             time.sleep(0.2)

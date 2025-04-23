@@ -63,7 +63,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
 
         # create package
         package = package_class(**cls_parameters)
-        print(package.to_json() + "\x1E")
         server.sendall(str.encode(package.to_json() + "\x1E"))
 
         data = server.recv(1024)
