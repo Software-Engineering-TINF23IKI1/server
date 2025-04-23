@@ -1,4 +1,7 @@
+from bbc_server.packages import StartGameSessionPackage
 from bbc_server.tcp_client import TcpClient
+from bbc_game.game_session import GameSession
+from bbc_game.game_state import GameState
 from threading import Thread
 import time
 import signal
@@ -23,6 +26,7 @@ class TcpServer:
         signal.signal(signal.SIGINT, self.stop_server)
 
         self.players = []
+        self.game_sessions = {}
 
         self._package_listener_thread = Thread(target=self._package_listener)
         self._package_listener_thread.start()
@@ -48,9 +52,15 @@ class TcpServer:
                 if not player.has_content():
                     continue
 
-                package = player.read_package()
+                if not (package := player.read_package()):
+                    continue
 
-                if package:
+                if isinstance(package, StartGameSessionPackage):
+                    # Creates a new game session and adds the current player to the session
+                    session = self.create_game_session()
+                    session.add_player(player)
+                    self.players.remove(player)
+                else:
                     print(f"[{player.address}] {package.to_json()}")
                     player.send_string("confirmation")
 
@@ -69,10 +79,28 @@ class TcpServer:
 
         self._is_server_running = False
 
+        for session in self.game_sessions.values():
+            print(f">>> Killing game session [{session.code}]...")
+            session.state = GameState.Kill
+            session.thread.join()
+
+        # Stop package listener
+        print(">>> Killing main tcp server...")
         self._package_listener_thread.join()
         self._server.close()
 
         print(">>> Server sucessfully closed!")
+
+    def create_game_session(self) -> GameSession:
+        """Creates a new game session and adds it to the game session dictionary
+
+        Returns:
+            GameSession: The newly created game session
+        """
+        session = GameSession()
+        self.game_sessions[session.code] = session
+        print(f">>> Created new game session with code [{session.code}]")
+        return session
 
 
 if __name__ == "__main__":
