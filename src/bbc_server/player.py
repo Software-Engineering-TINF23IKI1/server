@@ -1,5 +1,9 @@
-from typing import Optional
-from bbc_server.tcp_client import TcpClient
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from bbc_server.tcp_client import TcpClient
+
 from bbc_server._typing import BBCPackage
 
 class Player:
