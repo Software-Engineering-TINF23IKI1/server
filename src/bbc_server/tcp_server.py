@@ -18,7 +18,7 @@ class TcpServer:
         self._server.setblocking(False)
 
         self._is_server_running = True
-        print(f">>> Server listening on [{host}:{port}]")
+        print(f">>> Server listening on [{host or 'localhost'}:{port}]")
 
         signal.signal(signal.SIGINT, self.stop_server)
 
@@ -50,7 +50,6 @@ class TcpServer:
 
                 package = player.read_package()
 
-                # package = player.read_string()
                 if package:
                     print(f"[{player.address}] {package.to_json()}")
                     player.send_string("confirmation")
