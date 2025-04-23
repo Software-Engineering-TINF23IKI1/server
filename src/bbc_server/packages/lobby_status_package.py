@@ -2,6 +2,10 @@ from bbc_server.packages import BasePackage
 
 class LobbyStatusPackage(BasePackage):
     PACKAGE_TYPE = "lobby-status"
+    JSON_PARAM_MAP = {
+        "gamecode": "gamecode",
+        "players": "players"
+    }
 
     def __init__(self, gamecode: str, players: list[dict]):
         """LobbyStatusPackage

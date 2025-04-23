@@ -2,6 +2,9 @@ from bbc_server.packages import BasePackage
 
 class StatusUpdatePackage(BasePackage):
     PACKAGE_TYPE = "status-update"
+    JSON_PARAM_MAP = {
+        "is-ready": "is_ready"
+    }
 
     def __init__(self, is_ready: bool):
         """StatusUpdatePackage

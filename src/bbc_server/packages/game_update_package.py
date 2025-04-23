@@ -2,6 +2,11 @@ from bbc_server.packages import BasePackage
 
 class GameUpdatePackage(BasePackage):
     PACKAGE_TYPE = "game-update"
+    JSON_PARAM_MAP = {
+        "currency": "currency",
+        "score": "score",
+        "top-players": "top_players"
+    }
 
     N_TOP_PLAYERS = 5  # amount of players to show in the leaderboard
 
