@@ -24,10 +24,10 @@ class TcpServer:
 
         self.players = []
 
-        self._package_listener_thread = Thread(target=self._connection_listener)
+        self._package_listener_thread = Thread(target=self._package_listener)
         self._package_listener_thread.start()
 
-        self._package_listener()
+        self._connection_listener()
 
     def _connection_listener(self):
         """Loop listening for new client connections
