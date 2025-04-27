@@ -1,7 +1,7 @@
 from bbc_server.packages.base import BasePackage
 from bbc_server.packages.connect_to_game_session_package import ConnectToGameSessionPackage
 from bbc_server.packages.end_routine_package import EndRoutinePackage
-from bbc_server.packages.exception_package import ExceptionPackage, PackageParsingExceptionPackage
+from bbc_server.packages.exception_package import ExceptionPackage, PackageParsingExceptionPackage, InvalidGameCodeExceptionPackage
 from bbc_server.packages.game_start_package import GameStartPackage
 from bbc_server.packages.game_update_package import GameUpdatePackage
 from bbc_server.packages.lobby_status_package import LobbyStatusPackage

@@ -1,4 +1,4 @@
-from bbc_server.packages import StartGameSessionPackage
+from bbc_server.packages import StartGameSessionPackage, ConnectToGameSessionPackage, InvalidGameCodeExceptionPackage
 from bbc_server.tcp_client import TcpClient
 from bbc_game.game_session import GameSession
 from bbc_game.game_state import GameState
@@ -6,6 +6,7 @@ from threading import Thread
 import time
 import signal
 import socket
+from bbc_server import Player
 
 class TcpServer:
     def __init__(self, host: str, port: int):
@@ -40,7 +41,7 @@ class TcpServer:
             try:
                 (client, address) = self._server.accept()
                 print(f">>> Handling new client from [{address}]")
-                self.players.append(TcpClient(client, address))
+                self.players.append(Player(TcpClient(client, address)))
             except BlockingIOError:
                 time.sleep(1)
 
@@ -49,20 +50,26 @@ class TcpServer:
         """
         while self._is_server_running:
             for player in self.players:
-                if not player.has_content():
-                    continue
 
                 if not (package := player.read_package()):
                     continue
 
                 if isinstance(package, StartGameSessionPackage):
                     # Creates a new game session and adds the current player to the session
+                    player.name = package.playername
                     session = self.create_game_session()
                     session.add_player(player)
                     self.players.remove(player)
+                elif isinstance(package, ConnectToGameSessionPackage):
+                    if package.gamecode in self.game_sessions.keys():
+                        player.name = package.playername
+                        self.game_sessions[package.gamecode].add_player(player)
+                        self.players.remove(player)
+                    else:
+                        player.send_package(InvalidGameCodeExceptionPackage(package.gamecode))
                 else:
-                    print(f"[{player.address}] {package.to_json()}")
-                    player.send_string("confirmation")
+                    print(f"[{player.client.address}] {package.to_json()}")
+
 
             time.sleep(0.2)
 
@@ -74,8 +81,6 @@ class TcpServer:
             frame : Value needed for Ctrl-C interception
         """
         print(">>> Stopping server...")
-        for player in self.players:
-            player.send_string("server is shutting down.")
 
         self._is_server_running = False
 

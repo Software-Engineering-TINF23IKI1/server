@@ -80,7 +80,7 @@ class TcpClient:
             print(f">>> client [{self.address}] lost connection")
             self._is_running = False
 
-    def read_package(self) -> Optional[BBCPackage]:
+    def read_package(self, **kwargs) -> Optional[BBCPackage]:
         """read a package if available
         If a package is invalid the next package is automatically read.
 
@@ -107,10 +107,10 @@ class TcpClient:
                 self.send_package(PackageParsingExceptionPackage(stage="Body", details=details))
 
 
-    def send_package(self, package: BBCPackage) -> None:
+    def send_package(self, package: BBCPackage, **kwargs) -> None:
         """send package to the Client
 
         Args:
-            package (BBCPackage): _description_
+            package (BBCPackage): package to send
         """
         self.send_string(package.to_json())
