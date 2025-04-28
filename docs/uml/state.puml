@@ -1,0 +1,31 @@
+@startuml state
+state TcpServer {
+  ConnectionListener: Listens for new incoming connection
+  [*] -> ConnectionListener
+  ---
+  state GameSessionFork <<fork>>
+  PackageListener: Listens for incoming packages
+  state GameSession {
+    Preperation: Manages a game lobby
+    Running: Manages a running game
+    Ended: Manages a games endscreen
+
+    [*] -> Preperation
+    Preperation -> Running : All players ready
+    Running -> Ended : Game session end condition triggers
+    Ended -> [*]
+
+    Preperation -down-> [*] : ServerInterrupt
+    Running -down-> [*] : ServerInterrupt
+  }
+
+  [*] -> PackageListener
+  PackageListener -down-> GameSessionFork : StartGameSessionPackage
+  GameSessionFork -> PackageListener
+  GameSessionFork -> GameSession
+
+}
+
+[*] --> TcpServer
+TcpServer --> [*] : KeyboardInterrupt
+@enduml
