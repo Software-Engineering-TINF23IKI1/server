@@ -1,120 +1,198 @@
 @startuml classes
-set namespaceSeparator none
-class "src.bbc_game.game_session.GameSession" as src.bbc_game.game_session.GameSession {
-  code
-  end_condition : NoneType
-  players : list
-  point_earn_system : NoneType
-  shop : NoneType
-  state
-  thread : Thread
-  add_player(player: Player) -> bool
-  cleanup()
-  lobby_loop()
+
+class bbc_game.GameSession {
+  +code : str
+  +players : list[Player]
+  +state : GameState
+  +thread : Thread
+  .. game settings ..
+  +point_earn_system
+  +end_condition
+  +shop
+  ----
+  +add_player(player: Player) -> bool
+  +cleanup()
+  +lobby_loop()
 }
-class "src.bbc_game.game_state.GameState" as src.bbc_game.game_state.GameState {
-  name
+
+enum bbc_game.GameState {
+  Preperation
+  Running
+  Ended
+  Kill
 }
-class "<color:red>src.bbc_server.exceptions.BBCServerException</color>" as src.bbc_server.exceptions.BBCServerException {
+
+class bbc_game.game_code <<global function>> {
+  #GAME_CODE_CHARACTERS : str
+  #{field}USED_GAME_CODES : set[str]
+
+  +generate_game_code() -> str
+  +unregister_game_code(code: str)
 }
-class "<color:red>src.bbc_server.exceptions.InvalidBodyException</color>" as src.bbc_server.exceptions.InvalidBodyException {
+
+class bbc_server.packages.decoder <<global function>> {
+  +deserialize(input_str: str) -> BasePackage
 }
-class "<color:red>src.bbc_server.exceptions.InvalidPackageTypeException</color>" as src.bbc_server.exceptions.InvalidPackageTypeException {
+
+abstract bbc_server.packages.EnsurePackageType
+abstract bbc_server.packages.BasePackage {
+  #{abstract}generate_body_dict() -> dict
+  +to_json() -> str
 }
-class "<color:red>src.bbc_server.exceptions.PackageParsingException</color>" as src.bbc_server.exceptions.PackageParsingException {
+
+class bbc_server.packages.ConnectToGameSessionPackage {
+  +{static}PACKAGE_TYPE : str
+  +{static}JSON_PARAM_MAP : dict
+  #gamecode : str
+  #playername : str
+
+  #generate_body_dict() -> dict
 }
-class "src.bbc_server.packages.base.BasePackage" as src.bbc_server.packages.base.BasePackage {
-  to_json() -> str
+
+class bbc_server.packages.EndRoutinePackage {
+  +{static}PACKAGE_TYPE : str
+  +{static}JSON_PARAM_MAP : dict
+  #score : float
+  #is_winner : bool
+  #scoreboard : list[dict]
+
+  +is_scoreboard_valid(scoreboard: list[dict]) -> bool
+  #generate_body_dict() -> dict
 }
-class "src.bbc_server.packages.base.EnsurePackageType" as src.bbc_server.packages.base.EnsurePackageType {
+
+class bbc_server.packages.ExceptionPackage {
+  +{static}PACKAGE_TYPE : str
+  +{static}JSON_PARAM_MAP : dict
+  #name : str
+  #details : dict
+
+  #generate_body_dict() -> dict
 }
-class "src.bbc_server.packages.connect_to_game_session_package.ConnectToGameSessionPackage" as src.bbc_server.packages.connect_to_game_session_package.ConnectToGameSessionPackage {
-  JSON_PARAM_MAP : dict
-  PACKAGE_TYPE : str
-  gamecode
-  playername
+class bbc_server.packages.PackageParsingExceptionPackage
+class bbc_server.packages.InvalidGameCodeExceptionPackage
+
+class bbc_server.packages.GameStartPackage {
+  +{static}PACKAGE_TYPE : str
+  +{static}JSON_PARAM_MAP : dict
+
+  #generate_body_dict() -> dict
 }
-class "src.bbc_server.packages.end_routine_package.EndRoutinePackage" as src.bbc_server.packages.end_routine_package.EndRoutinePackage {
-  JSON_PARAM_MAP : dict
-  PACKAGE_TYPE : str
-  is_winner
-  score
-  scoreboard
-  is_scoreboard_valid(scoreboard: list[dict]) -> bool
+
+class bbc_server.packages.GameUpdatePackage {
+  +{static}PACKAGE_TYPE : str
+  +{static}JSON_PARAM_MAP : dict
+  +{static}N_TOP_PLAYERS : int
+  #currency : float
+  #score : float
+  #top_players : list[dict]
+
+  +is_top_player_list_valid(players: list[dict]) -> bool
+  #generate_body_dict() -> dict
 }
-class "src.bbc_server.packages.exception_package.ExceptionPackage" as src.bbc_server.packages.exception_package.ExceptionPackage {
-  JSON_PARAM_MAP : dict
-  PACKAGE_TYPE : str
-  details
-  name
+
+class bbc_server.packages.LobbyStatusPackage {
+  +{static}PACKAGE_TYPE : str
+  +{static}JSON_PARAM_MAP : dict
+  #gamecode : str
+  #players : list[dict]
+
+  +is_player_list_valid(players: list[dict]) -> bool
+  #generate_body_dict() -> dict
 }
-class "src.bbc_server.packages.exception_package.InvalidGameCodeExceptionPackage" as src.bbc_server.packages.exception_package.InvalidGameCodeExceptionPackage {
+
+class bbc_server.packages.PlayerClicksPackage {
+  +{static}PACKAGE_TYPE : str
+  +{static}JSON_PARAM_MAP : dict
+  #count : int
+
+  #generate_body_dict() -> dict
 }
-class "src.bbc_server.packages.exception_package.PackageParsingExceptionPackage" as src.bbc_server.packages.exception_package.PackageParsingExceptionPackage {
+
+class bbc_server.packages.StartGameSessionPackage {
+  +{static}PACKAGE_TYPE : str
+  +{static}JSON_PARAM_MAP : dict
+  #playername : str
+
+  #generate_body_dict() -> dict
 }
-class "src.bbc_server.packages.game_start_package.GameStartPackage" as src.bbc_server.packages.game_start_package.GameStartPackage {
-  JSON_PARAM_MAP : dict
-  PACKAGE_TYPE : str
+
+class bbc_server.packages.StatusUpdatePackage {
+  +{static}PACKAGE_TYPE : str
+  +{static}JSON_PARAM_MAP : dict
+  #is_ready : bool
+
+  #generate_body_dict() -> dict
 }
-class "src.bbc_server.packages.game_update_package.GameUpdatePackage" as src.bbc_server.packages.game_update_package.GameUpdatePackage {
-  JSON_PARAM_MAP : dict
-  N_TOP_PLAYERS : int
-  PACKAGE_TYPE : str
-  currency
-  score
-  top_players
-  is_top_player_list_valid(players: list[dict]) -> bool
+
+class "<color:red>BBCServerException</color>" as bbc_server.BBCServerException
+class "<color:red>PackageParsingException</color>" as bbc_server.PackageParsingException
+class "<color:red>InvalidPackageTypeException</color>" as bbc_server.InvalidPackageTypeException {
+  #msg : str
 }
-class "src.bbc_server.packages.lobby_status_package.LobbyStatusPackage" as src.bbc_server.packages.lobby_status_package.LobbyStatusPackage {
-  JSON_PARAM_MAP : dict
-  PACKAGE_TYPE : str
-  gamecode
-  players
-  is_player_list_valid() -> bool
+class "<color:red>InvalidBodyException</color>" as bbc_server.InvalidBodyException {
+  #msg : str
 }
-class "src.bbc_server.packages.player_clicks_package.PlayerClicksPackage" as src.bbc_server.packages.player_clicks_package.PlayerClicksPackage {
-  JSON_PARAM_MAP : dict
-  PACKAGE_TYPE : str
-  count
+
+class bbc_server.TcpClient {
+  +{static}PACKET_SEPERATOR : str
+  +address : str
+  #client : socket.socket
+  #text : str
+  #package_queue : list[str]
+  #is_running : bool
+
+  +read_string() -> str | None
+  +send_string(content: str)
+  +read_package() -> Optional[BasePackage]
+  +send_package(package: BasePackage) -> None
 }
-class "src.bbc_server.packages.start_game_session_package.StartGameSessionPackage" as src.bbc_server.packages.start_game_session_package.StartGameSessionPackage {
-  JSON_PARAM_MAP : dict
-  PACKAGE_TYPE : str
-  playername
+class bbc_server.Player {
+  #client : TcpClient
+  +name : str
+  +is_ready : bool
+  +currency : float
+  +points : float
+  +earn_rate : float
+
+  +read_package() -> Optional[BasePackage]
+  +send_package(package: BBCPackage) -> None
 }
-class "src.bbc_server.packages.status_update_package.StatusUpdatePackage" as src.bbc_server.packages.status_update_package.StatusUpdatePackage {
-  JSON_PARAM_MAP : dict
-  PACKAGE_TYPE : str
-  is_ready
+
+class bbc_server.TcpServer {
+  +players : list[Player]
+  +game_sessions : dict()
+  #server : socket.socket
+  #is_server_running : bool
+  #package_listener_thread : Thread
+
+  +stop_server(signum, frame)
+  +create_game_session() -> GameSession
+  #connection_listener()
+  #package_listener()
 }
-class "src.bbc_server.player.Player" as src.bbc_server.player.Player {
-  client
-  currency
-  earn_rate
-  is_ready
-  name
-  points
-  read_package() -> Optional[BBCPackage]
-  send_package(package: BBCPackage) -> None
-}
-class "src.bbc_server.tcp_client.TcpClient" as src.bbc_server.tcp_client.TcpClient {
-  PACKET_SEPERATOR : str
-  address
-  has_content() -> bool
-  read_package() -> Optional[BBCPackage]
-  read_string() -> str | None
-  send_package(package: BBCPackage) -> None
-  send_string(content: str)
-}
-class "src.bbc_server.tcp_server.TcpServer" as src.bbc_server.tcp_server.TcpServer {
-  game_sessions : dict
-  players : list
-  create_game_session() -> GameSession
-  stop_server(signum, frame)
-}
-src.bbc_server.exceptions.InvalidBodyException --|> src.bbc_server.exceptions.PackageParsingException
-src.bbc_server.exceptions.InvalidPackageTypeException --|> src.bbc_server.exceptions.PackageParsingException
-src.bbc_server.exceptions.PackageParsingException --|> src.bbc_server.exceptions.BBCServerException
-src.bbc_server.packages.exception_package.InvalidGameCodeExceptionPackage --|> src.bbc_server.packages.exception_package.ExceptionPackage
-src.bbc_server.packages.exception_package.PackageParsingExceptionPackage --|> src.bbc_server.packages.exception_package.ExceptionPackage
+
+BasePackage ..|> EnsurePackageType
+ConnectToGameSessionPackage ..|> BasePackage
+EndRoutinePackage ..|> BasePackage
+ExceptionPackage ..|> BasePackage
+PackageParsingExceptionPackage --|> ExceptionPackage
+InvalidGameCodeExceptionPackage --|> ExceptionPackage
+GameStartPackage ..|> BasePackage
+GameUpdatePackage ..|> BasePackage
+LobbyStatusPackage ..|> BasePackage
+PlayerClicksPackage ..|> BasePackage
+StartGameSessionPackage ..|> BasePackage
+StatusUpdatePackage ..|> BasePackage
+BBCServerException --|> "<color:red>Exception</color>"
+PackageParsingException --|> BBCServerException
+InvalidPackageTypeException --|> PackageParsingException
+InvalidBodyException --|> PackageParsingException
+
+GameSession --> GameState : > has
+TcpClient --> BasePackage : > sends and recieves
+Player --* TcpClient : uses
+GameSession "1" --> "N" Player : > contains
+TcpServer "1" --> "N" Player : > contains
+TcpServer "1" --> "N" GameSession : > contains and creates
+
 @enduml
