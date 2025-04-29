@@ -22,8 +22,7 @@ class GameSession:
 
     def lobby_loop(self):
         while self.state is GameState.Preperation:
-            for player in self.players:
-                pass  # If has package: interpret package content
+            allPlayersReady = all(player.isReady() for player in self.players)
 
             pass  # Send lobby status package
 
