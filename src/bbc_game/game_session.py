@@ -26,7 +26,7 @@ class GameSession:
 
             pass  # Send lobby status package
 
-            time.sleep(0.1)
+            time.sleep(0.1) # Needs to be revisited 
 
     def add_player(self, player: Player) -> bool:
         """Adds a player to the game session scope. When a player enters the game session scope, player packets will
