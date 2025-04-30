@@ -95,11 +95,7 @@ class TcpClient:
         if not self.is_running:
             return
 
-        try:
-            self._client.sendall((content + TcpClient.PACKET_SEPERATOR).encode())
-        except (ConnectionResetError, ConnectionAbortedError):
-            print(f">>> client [{self.address}] lost connection")
-            self.is_running = False
+        self._outgoing_queue.append(content)
 
     def read_package(self, **kwargs) -> Optional[BBCPackage]:
         """read a package if available
