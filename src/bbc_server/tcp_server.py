@@ -80,6 +80,10 @@ class TcpServer:
             signum : Value needed for Ctrl-C interception
             frame : Value needed for Ctrl-C interception
         """
+        # Only stop the server, if not already stopped
+        if not self._is_server_running:
+            return
+
         print(">>> Stopping server...")
 
         self._is_server_running = False
