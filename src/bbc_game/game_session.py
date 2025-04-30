@@ -53,5 +53,5 @@ class GameSession:
         unregister_game_code(self.code)
 
         for player in self.players:
-            player.is_running = False
-            player.thread.join()
+            player.client.is_running = False
+            player.client.thread.join()
