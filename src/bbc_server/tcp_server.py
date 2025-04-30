@@ -85,13 +85,17 @@ class TcpServer:
             return
 
         print(">>> Stopping server...")
-
         self._is_server_running = False
+
+        for player in self.players:
+            player.is_running = False
+            player.thread.join()
 
         for session in self.game_sessions.values():
             print(f">>> Killing game session [{session.code}]...")
             session.state = GameState.Kill
             session.thread.join()
+            session.cleanup()
 
         # Stop package listener
         print(">>> Killing main tcp server...")

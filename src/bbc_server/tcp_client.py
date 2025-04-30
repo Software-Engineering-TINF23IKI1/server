@@ -23,7 +23,7 @@ class TcpClient:
 
         self._text = ""  # A storage to hold read but not yet parsed text from the client
         self._package_queue = list()
-        self._is_running = True
+        self.is_running = True
 
         self._outgoing_queue = list()
         # Start a thread for sending packages to the client
@@ -33,13 +33,13 @@ class TcpClient:
     def _send_message_thread(self):
         """Sends elements of the outgoing queue
         """
-        while self._is_running:
+        while self.is_running:
             while self._outgoing_queue:
                 try:
                     self._client.sendall((self._outgoing_queue.pop(0) + TcpClient.PACKET_SEPERATOR).encode())
                 except (ConnectionResetError, ConnectionAbortedError):
                     print(f">>> client [{self.address}] lost connection")
-                    self._is_running = False
+                    self.is_running = False
                     return
 
             time.sleep(0.1)
@@ -50,7 +50,7 @@ class TcpClient:
         Returns:
             bool: True if content is available, False otherwise
         """
-        if not self._is_running:
+        if not self.is_running:
             return False
 
         if self._package_queue:
@@ -63,7 +63,7 @@ class TcpClient:
                     raise ConnectionAbortedError()
                 self._text += data.decode()
         except (ConnectionResetError, ConnectionAbortedError):
-            self._is_running = False
+            self.is_running = False
             print(f">>> client [{self.address}] lost connection")
             return False
         except BlockingIOError:
@@ -92,14 +92,14 @@ class TcpClient:
         Args:
             content (str): The string object to send
         """
-        if not self._is_running:
+        if not self.is_running:
             return
 
         try:
             self._client.sendall((content + TcpClient.PACKET_SEPERATOR).encode())
         except (ConnectionResetError, ConnectionAbortedError):
             print(f">>> client [{self.address}] lost connection")
-            self._is_running = False
+            self.is_running = False
 
     def read_package(self, **kwargs) -> Optional[BBCPackage]:
         """read a package if available

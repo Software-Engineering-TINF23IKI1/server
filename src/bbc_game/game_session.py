@@ -51,3 +51,7 @@ class GameSession:
         """Cleans all resources used by the game session directly
         """
         unregister_game_code(self.code)
+
+        for player in self.players:
+            player.is_running = False
+            player.thread.join()
