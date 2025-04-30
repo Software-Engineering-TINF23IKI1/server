@@ -3,6 +3,8 @@ from typing import Optional
 from bbc_server._typing import BBCPackage
 from bbc_server.packages import Decoder, PackageParsingExceptionPackage
 from json import JSONDecodeError
+from threading import Thread
+import time
 from bbc_server.exceptions import InvalidPackageTypeException, InvalidBodyException
 
 class TcpClient:
@@ -22,6 +24,25 @@ class TcpClient:
         self._text = ""  # A storage to hold read but not yet parsed text from the client
         self._package_queue = list()
         self._is_running = True
+
+        self._outgoing_queue = list()
+        # Start a thread for sending packages to the client
+        self.thread = Thread(target=self._send_message_thread)
+        self.thread.start()
+
+    def _send_message_thread(self):
+        """Sends elements of the outgoing queue
+        """
+        while self._is_running:
+            while self._outgoing_queue:
+                try:
+                    self._client.sendall((self._outgoing_queue.pop(0) + TcpClient.PACKET_SEPERATOR).encode())
+                except (ConnectionResetError, ConnectionAbortedError):
+                    print(f">>> client [{self.address}] lost connection")
+                    self._is_running = False
+                    return
+
+            time.sleep(0.1)
 
     def has_content(self) -> bool:
         """Returns whether or not data is available from the Tcp_client
