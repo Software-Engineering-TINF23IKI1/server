@@ -22,11 +22,11 @@ class GameSession:
 
     def lobby_loop(self):
         while self.state is GameState.Preperation:
-            allPlayersReady = all(player.isReady() for player in self.players)
+            allPlayersReady = all(player.is_ready for player in self.players)
 
             pass  # Send lobby status package
 
-            time.sleep(0.1) # Needs to be revisited 
+            time.sleep(0.1)
 
     def add_player(self, player: Player) -> bool:
         """Adds a player to the game session scope. When a player enters the game session scope, player packets will
