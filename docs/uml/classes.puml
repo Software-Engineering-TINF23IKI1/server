@@ -134,9 +134,10 @@ class "<color:red>InvalidBodyException</color>" as bbc_server.InvalidBodyExcepti
 class bbc_server.TcpClient {
   +{static}PACKET_SEPERATOR : str
   +address : str
+  +is_running : bool
   #text : str
   #package_queue : list[str]
-  #is_running : bool
+  #outgoing_queue : list[str]
 
   +read_string() -> str | None
   +send_string(content: str)
@@ -182,6 +183,7 @@ InvalidPackageTypeException --|> PackageParsingException
 InvalidBodyException --|> PackageParsingException
 
 TcpClient "1" --> "N" BasePackage : > sends and recieves
+TcpClient "1" --> "1" threading.Thread : > uses
 TcpClient --* socket.socket : > uses
 Player --* TcpClient : > uses
 GameSession "1" --> "1" GameState : > has
