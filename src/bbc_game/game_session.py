@@ -21,10 +21,22 @@ class GameSession:
         self.thread.start()
 
     def lobby_loop(self):
+        loop_iteration = 0
         while self.state is GameState.Preperation:
+            
             allPlayersReady = all(player.is_ready for player in self.players)
 
             pass  # Send lobby status package
+
+            if allPlayersReady:
+                loop_iteration += 1
+
+            if not allPlayersReady:
+                loop_iteration = 0 # Reset Loop Iteration Counter so waiting for all players restarts
+
+            if allPlayersReady and loop_iteration >= 400:
+                # End Lobby loop and go over into Game Loop
+                pass
 
             time.sleep(0.1)
 
