@@ -33,3 +33,5 @@ class ConnectToGameSessionPackage(BasePackage):
     def playername(self) -> str:
         return self.__playername
     
+    def __repr__(self):
+        return f"ConnectToGameSessionPackage({self.gamecode}, {self.playername})"

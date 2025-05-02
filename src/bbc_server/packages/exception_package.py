@@ -36,6 +36,9 @@ class ExceptionPackage(BasePackage):
     def details(self) -> dict:
         return self.__details
 
+    def __repr__(self):
+        return f"ExceptionPackage({self.name}, {str(self.details)})"
+
 
 class PackageParsingExceptionPackage(ExceptionPackage):
     """Wrapper Class for Package Parsing Exceptions
@@ -53,6 +56,10 @@ class PackageParsingExceptionPackage(ExceptionPackage):
         }
         super().__init__("PackageParsingException", details)
 
+    def __repr__(self):
+        return f"PackageParsingExceptionPackage({self.stage}, {str(self.details)})"
+
+
 class InvalidGameCodeExceptionPackage(ExceptionPackage):
     """Wrapper Class for Invalid GameCodes
 
@@ -68,3 +75,6 @@ class InvalidGameCodeExceptionPackage(ExceptionPackage):
             **details
         }
         super().__init__("InvalidGameCodeException", details)
+
+    def __repr__(self):
+        return f"InvalidGameCodeExceptionPackage({self.code}, {str(self.details)})"
