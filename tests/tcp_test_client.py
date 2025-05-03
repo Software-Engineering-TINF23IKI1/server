@@ -115,17 +115,17 @@ class TcpTestClient:
                 details = {
                     "raw_msg": str(e)
                 }
-                self.send_package(PackageParsingExceptionPackage(stage="JSON", details=details))
+                print(PackageParsingExceptionPackage(stage="JSON", details=details))
             except InvalidPackageTypeException as e:
                 details = {
                     "raw_msg": str(e)
                 }
-                self.send_package(PackageParsingExceptionPackage(stage="Package-Type", details=details))
+                print(PackageParsingExceptionPackage(stage="Package-Type", details=details))
             except InvalidBodyException as e:
                 details = {
                     "raw_msg": str(e)
                 }
-                self.send_package(PackageParsingExceptionPackage(stage="Body", details=details))
+                print(PackageParsingExceptionPackage(stage="Body", details=details))
 
     def send_package(self, package: BBCPackage, **kwargs) -> None:
         """send package to the Client
@@ -140,7 +140,7 @@ class TcpTestClient:
         self._client.shutdown()
 
 
-class InterActiveTestClient(TcpTestClient):
+class InteractiveTestClient(TcpTestClient):
 
     def __init__(self, ip, port, listener_delay: float = 0.5, filter_function: Optional[Callable] = None):
         super().__init__(ip, port)

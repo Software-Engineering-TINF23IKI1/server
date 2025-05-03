@@ -30,11 +30,12 @@ class GameSession:
     def lobby_loop(self):
         while self.state is GameState.Preperation:
             self.update_player_list()
+            player_list = [{"playername": inner_player.name, "is-ready": inner_player.is_ready} for inner_player in self.players]
             for player in self.players:
                 player.send_package(
                     bbc_server.packages.LobbyStatusPackage(
                         self.code,
-                        players=[{"playername": inner_player.name, "is-ready": inner_player.is_ready} for inner_player in self.players]
+                        players=player_list
                         )
                 )
                 pass  # If has package: interpret package content

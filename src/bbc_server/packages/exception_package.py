@@ -50,6 +50,8 @@ class PackageParsingExceptionPackage(ExceptionPackage):
     def __init__(self, stage: str, details: Optional[dict] = None):
         if not details:
             details = {}
+        self._stage = stage
+        self._details = details
         details = {
             "stage": stage,
             **details
@@ -57,7 +59,7 @@ class PackageParsingExceptionPackage(ExceptionPackage):
         super().__init__("PackageParsingException", details)
 
     def __repr__(self):
-        return f"PackageParsingExceptionPackage({self.stage}, {str(self.details)})"
+        return f"PackageParsingExceptionPackage({self._stage}, {str(self._details)})"
 
 
 class InvalidGameCodeExceptionPackage(ExceptionPackage):
@@ -70,6 +72,8 @@ class InvalidGameCodeExceptionPackage(ExceptionPackage):
     def __init__(self, code: str, details: Optional[dict] = None):
         if not details:
             details = {}
+        self._code = code
+        self._details = details
         details = {
             "code": code,
             **details
@@ -77,4 +81,4 @@ class InvalidGameCodeExceptionPackage(ExceptionPackage):
         super().__init__("InvalidGameCodeException", details)
 
     def __repr__(self):
-        return f"InvalidGameCodeExceptionPackage({self.code}, {str(self.details)})"
+        return f"InvalidGameCodeExceptionPackage({self._code}, {str(self._details)})"
