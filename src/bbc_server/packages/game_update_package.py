@@ -61,3 +61,5 @@ class GameUpdatePackage(BasePackage):
     def top_players(self) -> list[dict]:
         return self.__top_players
 
+    def __repr__(self):
+        return f"GameUpdatePackage({self.currency}, {self.score}, {self.top_players})"

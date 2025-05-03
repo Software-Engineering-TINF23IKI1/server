@@ -2,7 +2,11 @@ from bbc_game.game_state import GameState
 from bbc_game.game_code import generate_game_code, unregister_game_code
 from threading import Thread
 from bbc_server import Player
+import bbc_server
 import time
+
+import bbc_server.exceptions
+import bbc_server.packages
 
 class GameSession:
     def __init__(self):
@@ -20,9 +24,20 @@ class GameSession:
         self.thread = Thread(target=self.lobby_loop)
         self.thread.start()
 
+    def update_player_list(self):
+        self.players = [player for player in self.players if player.client._is_running]
+
     def lobby_loop(self):
         while self.state is GameState.Preperation:
+            self.update_player_list()
+            player_list = [{"playername": inner_player.name, "is-ready": inner_player.is_ready} for inner_player in self.players]
             for player in self.players:
+                player.send_package(
+                    bbc_server.packages.LobbyStatusPackage(
+                        self.code,
+                        players=player_list
+                        )
+                )
                 pass  # If has package: interpret package content
 
             pass  # Send lobby status package

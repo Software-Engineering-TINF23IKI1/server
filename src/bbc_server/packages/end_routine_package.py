@@ -58,3 +58,5 @@ class EndRoutinePackage(BasePackage):
     def scoreboard(self) -> list[dict]:
         return self.__scoreboard
 
+    def __repr__(self):
+        return f"EndRoutinePackage({self.score}, {self.is_winner}, {str(self.scoreboard)})"

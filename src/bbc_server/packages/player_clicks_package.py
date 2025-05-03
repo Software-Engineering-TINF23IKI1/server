@@ -22,3 +22,5 @@ class PlayerClicksPackage(BasePackage):
     def count(self) -> int:
         return self.__count
 
+    def __repr__(self):
+        return f"PlayerClicksPackage({self.count})"

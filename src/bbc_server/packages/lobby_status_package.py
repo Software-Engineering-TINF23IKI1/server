@@ -23,7 +23,7 @@ class LobbyStatusPackage(BasePackage):
             raise ValueError("player list is not valid")
         self.__players = players
 
-    def is_player_list_valid(players: list[dict]) -> bool:
+    def is_player_list_valid(self, players: list[dict]) -> bool:
         """check if player list is in the defined format
         This is done performing only structural checks.
         More information on the required strcture and data can be found in the package documentation
@@ -52,3 +52,5 @@ class LobbyStatusPackage(BasePackage):
     def players(self) -> list[dict]:
         return self.__players
 
+    def __repr__(self):
+        return f"LobbyStatusPackage({self.gamecode}, {str(self.players)})"
