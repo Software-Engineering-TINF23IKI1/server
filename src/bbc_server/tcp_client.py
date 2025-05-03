@@ -44,6 +44,16 @@ class TcpClient:
 
             time.sleep(0.1)
 
+    def close(self):
+        """Closes all resources used by the tcp_client
+        """
+        self.is_running = False
+        self.thread.join()
+
+        self._client.shutdown()
+        self._client.close()
+
+
     def has_content(self) -> bool:
         """Returns whether or not data is available from the Tcp_client
 

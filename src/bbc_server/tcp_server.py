@@ -88,8 +88,7 @@ class TcpServer:
         self._is_server_running = False
 
         for player in self.players:
-            player.client.is_running = False
-            player.client.thread.join()
+            player.client.shutdown()
 
         for session in self.game_sessions.values():
             print(f">>> Killing game session [{session.code}]...")
