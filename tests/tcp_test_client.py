@@ -216,7 +216,7 @@ def main():
 
     IP = str(TEST_CONFIG.get("test_server", "IP")).strip()
     PORT = int(TEST_CONFIG.get("test_server", "PORT").strip())
-    client = InterActiveTestClient(IP, PORT)
+    client = InteractiveTestClient(IP, PORT)
     client.make_interactive()
 
 
