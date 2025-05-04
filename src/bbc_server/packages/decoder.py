@@ -24,6 +24,6 @@ def deserialize(input_str: str) -> BBCPackage:
     try:
         param_dict = {package_class.JSON_PARAM_MAP[key]: value for key, value in parsed_dict["body"].items()}
         return package_class(**param_dict)
-    except (KeyError, TypeError) as e:
+    except (KeyError, TypeError, ValueError) as e:
         raise InvalidBodyException(str(e))
 
