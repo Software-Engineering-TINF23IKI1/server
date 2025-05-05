@@ -1,15 +1,13 @@
 @startuml classes
 
+class threading.Thread
+class socket.socket
+
 class bbc_game.GameSession {
   +code : str
-  +players : list[Player]
-  +state : GameState
-  +thread : Thread
-  .. game settings ..
   +point_earn_system
   +end_condition
   +shop
-  ----
   +add_player(player: Player) -> bool
   +cleanup()
   +lobby_loop()
@@ -136,10 +134,10 @@ class "<color:red>InvalidBodyException</color>" as bbc_server.InvalidBodyExcepti
 class bbc_server.TcpClient {
   +{static}PACKET_SEPERATOR : str
   +address : str
-  #client : socket.socket
+  +is_running : bool
   #text : str
   #package_queue : list[str]
-  #is_running : bool
+  #outgoing_queue : list[str]
 
   +read_string() -> str | None
   +send_string(content: str)
@@ -147,7 +145,6 @@ class bbc_server.TcpClient {
   +send_package(package: BasePackage) -> None
 }
 class bbc_server.Player {
-  #client : TcpClient
   +name : str
   +is_ready : bool
   +currency : float
@@ -159,11 +156,8 @@ class bbc_server.Player {
 }
 
 class bbc_server.TcpServer {
-  +players : list[Player]
   +game_sessions : dict()
-  #server : socket.socket
   #is_server_running : bool
-  #package_listener_thread : Thread
 
   +stop_server(signum, frame)
   +create_game_session() -> GameSession
@@ -188,11 +182,16 @@ PackageParsingException --|> BBCServerException
 InvalidPackageTypeException --|> PackageParsingException
 InvalidBodyException --|> PackageParsingException
 
-GameSession --> GameState : > has
-TcpClient --> BasePackage : > sends and recieves
-Player --* TcpClient : uses
+TcpClient "1" --> "N" BasePackage : > sends and recieves
+TcpClient "1" --> "1" threading.Thread : > uses
+TcpClient --* socket.socket : > uses
+Player --* TcpClient : > uses
+GameSession "1" --> "1" GameState : > has
+GameSession "1" --> "1" threading.Thread : > uses
 GameSession "1" --> "N" Player : > contains
 TcpServer "1" --> "N" Player : > contains
 TcpServer "1" --> "N" GameSession : > contains and creates
+TcpServer "1" --> "1" threading.Thread : > uses
+TcpServer "1" --> "1" socket.socket : > uses
 
 @enduml

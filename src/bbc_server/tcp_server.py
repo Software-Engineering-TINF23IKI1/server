@@ -80,14 +80,21 @@ class TcpServer:
             signum : Value needed for Ctrl-C interception
             frame : Value needed for Ctrl-C interception
         """
-        print(">>> Stopping server...")
+        # Only stop the server, if not already stopped
+        if not self._is_server_running:
+            return
 
+        print(">>> Stopping server...")
         self._is_server_running = False
+
+        for player in self.players:
+            player.client.shutdown()
 
         for session in self.game_sessions.values():
             print(f">>> Killing game session [{session.code}]...")
             session.state = GameState.Kill
             session.thread.join()
+            session.cleanup()
 
         # Stop package listener
         print(">>> Killing main tcp server...")
