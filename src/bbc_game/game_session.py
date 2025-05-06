@@ -44,17 +44,19 @@ class GameSession:
 
             pass  # Send lobby status package
 
-            
+
+            all_players_ready = all(player["is-ready"] for player in player_list)
             # Icrease iterator if all Players are ready
-            if allPlayersReady:
+            if all_players_ready:
                 loop_iteration += 1
 
-            if not allPlayersReady:
+            if not all_players_ready:
                 loop_iteration = 0 # Reset Loop Iteration Counter so waiting for all players restarts
 
-            if allPlayersReady and loop_iteration >= 400:
+            if all_players_ready and loop_iteration >= 400:
                 self.state = GameState.Running
                 pass
+
 
             time.sleep(0.1)
 
