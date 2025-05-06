@@ -50,7 +50,7 @@ class TcpClient:
         self.is_running = False
         self.thread.join()
 
-        self._client.shutdown()
+        self._client.shutdown(socket.SHUT_RDWR)
         self._client.close()
 
 

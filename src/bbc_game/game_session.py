@@ -25,7 +25,7 @@ class GameSession:
         self.thread.start()
 
     def update_player_list(self):
-        self.players = [player for player in self.players if player.client._is_running]
+        self.players = [player for player in self.players if player.client.is_running]
 
     def lobby_loop(self):
         while self.state is GameState.Preperation:
@@ -68,4 +68,4 @@ class GameSession:
         unregister_game_code(self.code)
 
         for player in self.players:
-            player.client.shutdown()
+            player.client.close()
