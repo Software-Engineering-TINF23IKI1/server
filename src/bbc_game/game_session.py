@@ -49,7 +49,7 @@ class GameSession:
                 loop_iteration = 0 # Reset Loop Iteration Counter so waiting for all players restarts
 
             if allPlayersReady and loop_iteration >= 400:
-                # End Lobby loop and go over into Game Loop
+                self.state = GameState.Running
                 pass
 
             time.sleep(0.1)
