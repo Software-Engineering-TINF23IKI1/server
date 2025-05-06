@@ -13,9 +13,7 @@ def deserialize(input_str: str) -> BBCPackage:
 
     # 2. check for valid type
     if package_type := parsed_dict.get("type"):
-        try:
-            package_class = PACKAGE_DICT[package_type]
-        except KeyError:
+        if  not (package_class := PACKAGE_DICT.get(package_type)):
             raise InvalidPackageTypeException
     else:
         raise InvalidPackageTypeException
