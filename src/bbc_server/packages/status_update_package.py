@@ -21,4 +21,6 @@ class StatusUpdatePackage(BasePackage):
     @property
     def is_ready(self) -> bool:
         return self.__is_ready
-    
+
+    def __repr__(self):
+        return f"StatusUpdatePackage({self.is_ready})"

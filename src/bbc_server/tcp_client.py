@@ -3,6 +3,8 @@ from typing import Optional
 from bbc_server._typing import BBCPackage
 from bbc_server.packages import Decoder, PackageParsingExceptionPackage
 from json import JSONDecodeError
+from threading import Thread
+import time
 from bbc_server.exceptions import InvalidPackageTypeException, InvalidBodyException
 
 class TcpClient:
@@ -21,7 +23,36 @@ class TcpClient:
 
         self._text = ""  # A storage to hold read but not yet parsed text from the client
         self._package_queue = list()
-        self._is_running = True
+        self.is_running = True
+
+        self._outgoing_queue = list()
+        # Start a thread for sending packages to the client
+        self.thread = Thread(target=self._send_message_thread)
+        self.thread.start()
+
+    def _send_message_thread(self):
+        """Sends elements of the outgoing queue
+        """
+        while self.is_running:
+            while self._outgoing_queue:
+                try:
+                    self._client.sendall((self._outgoing_queue.pop(0) + TcpClient.PACKET_SEPERATOR).encode())
+                except (ConnectionResetError, ConnectionAbortedError):
+                    print(f">>> client [{self.address}] lost connection")
+                    self.is_running = False
+                    return
+
+            time.sleep(0.1)
+
+    def close(self):
+        """Closes all resources used by the tcp_client
+        """
+        self.is_running = False
+        self.thread.join()
+
+        self._client.shutdown()
+        self._client.close()
+
 
     def has_content(self) -> bool:
         """Returns whether or not data is available from the Tcp_client
@@ -29,7 +60,7 @@ class TcpClient:
         Returns:
             bool: True if content is available, False otherwise
         """
-        if not self._is_running:
+        if not self.is_running:
             return False
 
         if self._package_queue:
@@ -42,7 +73,7 @@ class TcpClient:
                     raise ConnectionAbortedError()
                 self._text += data.decode()
         except (ConnectionResetError, ConnectionAbortedError):
-            self._is_running = False
+            self.is_running = False
             print(f">>> client [{self.address}] lost connection")
             return False
         except BlockingIOError:
@@ -71,14 +102,10 @@ class TcpClient:
         Args:
             content (str): The string object to send
         """
-        if not self._is_running:
+        if not self.is_running:
             return
 
-        try:
-            self._client.sendall((content + TcpClient.PACKET_SEPERATOR).encode())
-        except (ConnectionResetError, ConnectionAbortedError):
-            print(f">>> client [{self.address}] lost connection")
-            self._is_running = False
+        self._outgoing_queue.append(content)
 
     def read_package(self, **kwargs) -> Optional[BBCPackage]:
         """read a package if available

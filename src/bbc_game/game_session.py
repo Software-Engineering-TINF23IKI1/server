@@ -3,7 +3,11 @@ from bbc_game.game_code import generate_game_code, unregister_game_code
 from bbc_server.packages import LobbyStatusPackage
 from threading import Thread
 from bbc_server import Player
+import bbc_server
 import time
+
+import bbc_server.exceptions
+import bbc_server.packages
 
 class GameSession:
     def __init__(self):
@@ -21,22 +25,25 @@ class GameSession:
         self.thread = Thread(target=self.lobby_loop)
         self.thread.start()
 
+    def update_player_list(self):
+        self.players = [player for player in self.players if player.client._is_running]
+
     def lobby_loop(self):
         loop_iteration = 0
         while self.state is GameState.Preperation:
-
-            # Writing Input for Package
-            self.readyStatus: list[dict[Player, bool]] = {}
+            self.update_player_list()
+            player_list = [{"playername": inner_player.name, "is-ready": inner_player.is_ready} for inner_player in self.players]
             for player in self.players:
-                self.ready_status.append({"playername": player.name, "is-ready": player.is_ready})
+                player.send_package(
+                    bbc_server.packages.LobbyStatusPackage(
+                        self.code,
+                        players=player_list
+                        )
+                )
+                pass  # If has package: interpret package content
 
-            allPlayersReady = all(player["ready"] for player in self.ready_status)
+            pass  # Send lobby status package
 
-            # Send lobby status package
-
-            for player in self.players:
-                player.send_package(LobbyStatusPackage(self.code,self.readyStatus))
-            
             
             # Icrease iterator if all Players are ready
             if allPlayersReady:
@@ -73,3 +80,6 @@ class GameSession:
         """Cleans all resources used by the game session directly
         """
         unregister_game_code(self.code)
+
+        for player in self.players:
+            player.client.shutdown()

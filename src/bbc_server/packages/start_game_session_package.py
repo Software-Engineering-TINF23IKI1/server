@@ -21,4 +21,6 @@ class StartGameSessionPackage(BasePackage):
     @property
     def playername(self) -> str:
         return self.__playername
-    
+
+    def __repr__(self):
+        return f"StartGameSessionPackage({self.playername})"

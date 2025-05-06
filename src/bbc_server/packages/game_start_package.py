@@ -13,4 +13,5 @@ class GameStartPackage(BasePackage):
     def _generate_body_dict(self) -> dict:
         return {}
 
-
+    def __repr__(self):
+        return f"GameStartPackage()"
