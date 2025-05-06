@@ -1,5 +1,6 @@
 from bbc_game.game_state import GameState
 from bbc_game.game_code import generate_game_code, unregister_game_code
+from bbc_server.packages import LobbyStatusPackage
 from threading import Thread
 from bbc_server import Player
 import time
@@ -9,6 +10,7 @@ class GameSession:
         """Generates a new empty game session with a newly generated game code
         """
         self.code = generate_game_code()
+        self.players: list[Player]
         self.players = []
         self.state = GameState.Preperation
 
@@ -23,11 +25,23 @@ class GameSession:
     def lobby_loop(self):
         loop_iteration = 0
         while self.state is GameState.Preperation:
+
+            # Writing Dict with if Players are ready
+            self.readyStatus: list[dict[Player, bool]] = {}        
+            #for player in self.players:
+            #    self.readyStatus[player] = player.is_ready
+            for player in self.players:
+                self.ready_status.append({"playername": player.name, "is-ready": player.is_ready})
+
+            allPlayersReady = all(player["ready"] for player in self.ready_status)
+
+            # Send lobby status package
+
+            for player in self.players:
+                player.send_package(LobbyStatusPackage(self.code,self.readyStatus))
             
-            allPlayersReady = all(player.is_ready for player in self.players)
-
-            pass  # Send lobby status package
-
+            
+            # Icrease iterator if all Players are ready
             if allPlayersReady:
                 loop_iteration += 1
 
