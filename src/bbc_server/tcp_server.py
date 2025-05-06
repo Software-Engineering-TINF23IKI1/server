@@ -1,3 +1,4 @@
+from __future__ import annotations
 from bbc_server.packages import StartGameSessionPackage, ConnectToGameSessionPackage, InvalidGameCodeExceptionPackage
 from bbc_server.tcp_client import TcpClient
 from bbc_game.game_session import GameSession
@@ -7,6 +8,7 @@ import time
 import signal
 import socket
 from bbc_server import Player
+from typing import Optional
 
 class TcpServer:
     def __init__(self, host: str, port: int):
@@ -16,23 +18,31 @@ class TcpServer:
             host (str): the host submask to start the server on (To allow global traffic, use '0.0.0.0')
             port (int): the port the server listens on
         """
+        self._host = host
+        self._port = port
         self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server.bind((host, port))
-        self._server.listen()
-        self._server.setblocking(False)
 
-        self._is_server_running = True
-        print(f">>> Server listening on [{host or 'localhost'}:{port}]")
-
-        signal.signal(signal.SIGINT, self.stop_server)
+        self._is_server_running = False
 
         self.players = []
         self.game_sessions = {}
-
         self._package_listener_thread = Thread(target=self._package_listener)
-        self._package_listener_thread.start()
 
+
+    def start(self):
+        """start TcpServer"""
+        self._server.listen()
+        self._server.setblocking(False)
+        self._is_server_running = True
+        try:
+            signal.signal(signal.SIGINT, self.stop_server)
+        except:
+            pass
+        self._package_listener_thread.start()
+        print(f">>> Server listening on [{self._host or 'localhost'}:{self._port}]")
         self._connection_listener()
+
 
     def _connection_listener(self):
         """Loop listening for new client connections
@@ -73,7 +83,7 @@ class TcpServer:
 
             time.sleep(0.2)
 
-    def stop_server(self, signum, frame):
+    def stop_server(self, signum: Optional[int] = None, frame: Optional = None):
         """Stops the Tcp_server and the running threads on Ctrl-C
 
         Args:
