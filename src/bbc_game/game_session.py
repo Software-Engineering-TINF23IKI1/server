@@ -10,8 +10,7 @@ class GameSession:
         """Generates a new empty game session with a newly generated game code
         """
         self.code = generate_game_code()
-        self.players: list[Player]
-        self.players = []
+        self.players: list[Player] = []
         self.state = GameState.Preperation
 
         self.point_earn_system = None
@@ -26,10 +25,8 @@ class GameSession:
         loop_iteration = 0
         while self.state is GameState.Preperation:
 
-            # Writing Dict with if Players are ready
-            self.readyStatus: list[dict[Player, bool]] = {}        
-            #for player in self.players:
-            #    self.readyStatus[player] = player.is_ready
+            # Writing Input for Package
+            self.readyStatus: list[dict[Player, bool]] = {}
             for player in self.players:
                 self.ready_status.append({"playername": player.name, "is-ready": player.is_ready})
 
