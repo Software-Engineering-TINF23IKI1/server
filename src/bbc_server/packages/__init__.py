@@ -24,3 +24,17 @@ PACKAGE_DICT = {
 
 
 from bbc_server.packages import decoder as Decoder
+
+__all__ = [
+    "ConnectToGameSessionPackage",
+    "EndRoutinePackage",
+    "ExceptionPackage",
+    "PackageParsingExceptionPackage",
+    "InvalidGameCodeExceptionPackage",
+    "GameStartPackage",
+    "GameUpdatePackage",
+    "LobbyStatusPackage",
+    "PlayerClicksPackage",
+    "StartGameSessionPackage",
+    "StatusUpdatePackage"
+]
