@@ -42,7 +42,6 @@ class GameSession:
                     match received_package:
                         case bbc_server.packages.StatusUpdatePackage():
                             player.is_ready = received_package.is_ready
-                            pass
                         case _:
                             pass  # Logging
                 
@@ -65,7 +64,7 @@ class GameSession:
                 loop_iteration += 1
 
             if not all_players_ready:
-                loop_iteration = 0 # Reset Loop Iteration Counter so waiting for all players restarts
+                loop_iteration = 0  # Reset Loop Iteration Counter so waiting for all players restarts
 
             if all_players_ready and loop_iteration >= 400:
                 self.state = GameState.Running
