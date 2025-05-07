@@ -82,8 +82,24 @@ class GameSession:
 
     def game_loop(self):
         while self.state is GameState.Running:
-            # Game Loop
+            # Read Player packages
+            for player in self.players:
+                while received_package := player.read_package():
+                    match received_package:
+                        # TODO: interprete packages (player-click, shop package)
+                        case _:
+                            pass  # Logging
+
+            pass  # Distribute points to players
+
+            pass  # Send game-update package to each player
+
+            pass  # Check end condition
+
             time.sleep(0.1)
+
+        if self.state is GameState.Ended:
+            pass  # Run end routine
 
 
     def add_player(self, player: Player) -> bool:
