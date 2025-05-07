@@ -4,7 +4,6 @@ import bbc_server._typing
 import bbc_server.packages
 from threading import Thread
 from bbc_server import Player
-from bbc_server._typing import BBCPackage
 import bbc_server
 import time
 
@@ -44,19 +43,18 @@ class GameSession:
                             player.is_ready = received_package.is_ready
                         case _:
                             pass  # Logging
-                
-            
-            
+
             # Sending Lobby Status
-            player_list = [{"playername": inner_player.name, "is-ready": inner_player.is_ready} for inner_player in self.players]
+            player_list = [
+                {"playername": inner_player.name, "is-ready": inner_player.is_ready}
+                for inner_player in self.players]
             for player in self.players:
                 player.send_package(
                     bbc_server.packages.LobbyStatusPackage(
                         self.code,
                         players=player_list
-                        )
+                    )
                 )
-
 
             all_players_ready = all(player["is-ready"] for player in player_list)
             # Icrease iterator if all Players are ready
@@ -87,7 +85,6 @@ class GameSession:
             # Game Loop
             time.sleep(0.1)
 
-        
 
     def add_player(self, player: Player) -> bool:
         """Adds a player to the game session scope. When a player enters the game session scope, player packets will
