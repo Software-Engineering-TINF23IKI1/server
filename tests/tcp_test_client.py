@@ -137,7 +137,7 @@ class TcpTestClient:
 
     def shutdown(self):
         self._is_running = False
-        self._client.shutdown()
+        self._client.shutdown(socket.SHUT_RDWR)
 
 
 class InteractiveTestClient(TcpTestClient):
