@@ -40,9 +40,6 @@ class GameSession:
                         players=player_list
                         )
                 )
-                pass  # If has package: interpret package content
-
-            pass  # Send lobby status package
 
 
             all_players_ready = all(player["is-ready"] for player in player_list)
@@ -55,7 +52,6 @@ class GameSession:
 
             if all_players_ready and loop_iteration >= 400:
                 self.state = GameState.Running
-                pass
 
 
             time.sleep(0.1)
