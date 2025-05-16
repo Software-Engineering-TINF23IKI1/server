@@ -113,4 +113,4 @@ class GameSession:
         unregister_game_code(self.code)
 
         for player in self.players:
-            player.client.close()
+            player.client.shutdown()
