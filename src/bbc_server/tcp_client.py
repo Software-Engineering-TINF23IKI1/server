@@ -44,7 +44,7 @@ class TcpClient:
 
             time.sleep(0.1)
 
-    def close(self):
+    def shutdown(self):
         """Closes all resources used by the tcp_client
         """
         self.is_running = False
