@@ -1,2 +1,1 @@
-from shop import Shop
-from game import Game
+import bbc_game._typing
