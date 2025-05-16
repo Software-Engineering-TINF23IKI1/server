@@ -155,8 +155,7 @@ class InteractiveTestClient(TcpTestClient):
 
     def _listen_to_packages(self):
         while self._is_running:
-            pkg = self.read_package()
-            if pkg:
+            while pkg := self.read_package():
                 if self.filter_function:
                     pkg = self.filter_function(pkg)
                 if pkg:
