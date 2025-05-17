@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from bbc_server._typing import BBCPackage
 
 class Player:
-    def __init__(self, client: TcpClient, name: str = None, is_ready: bool = False, currency: float = 0, earn_rate: float = 0):
+    def __init__(self, client: TcpClient, name: str = None, is_ready: bool = False, currency: float = 0, earn_rate: float = 0, click_modifier: float = 1):
         """class representing an individual player
 
         Args:
@@ -23,6 +23,7 @@ class Player:
         self._currency = currency
         self._points = 0
         self._earn_rate = earn_rate
+        self._click_modifier = click_modifier
 
     @property
     def client(self) -> TcpClient:
