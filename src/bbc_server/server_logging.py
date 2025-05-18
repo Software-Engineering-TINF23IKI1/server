@@ -2,6 +2,7 @@
 import logging
 import sys
 from typing import Optional
+from bbc_server import CONFIG
 
 
 class BaseAdapter(logging.LoggerAdapter):
@@ -87,11 +88,11 @@ formatter = DetailedFormatter(
 
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
-stream_handler.setLevel("INFO")
+stream_handler.setLevel(str(CONFIG.get("logging", "STREAM_LEVEL")))
 
-file_handler = logging.FileHandler("./logs/log.txt")
+file_handler = logging.FileHandler(str(CONFIG.get("logging", "FILE")))
 file_handler.setFormatter(formatter)
-file_handler.setLevel("DEBUG")
+file_handler.setLevel(str(CONFIG.get("logging", "FILE_LEVEL")))
 
 ROOT_LOGGER = logging.getLogger()
 ROOT_LOGGER.setLevel(logging.DEBUG)

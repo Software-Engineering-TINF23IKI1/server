@@ -36,7 +36,7 @@ class Player:
         self._earn_rate = earn_rate
         self._click_modifier = click_modifier
         self._gamecode = gamecode
-        self._logger = PlayerLogger(self._name, self._gamecode, self._client.address)
+        self._logger = PlayerLogger(self._name, self._gamecode, self._client.address[0], self._client.address[1])
         self._client.logger = self._logger  # sharing the player logger with the underlying TcpClient
 
     @property
@@ -50,8 +50,7 @@ class Player:
     @name.setter
     def name(self, name: str) -> None:
         self._name = name
-        # changing the logger. this setup is questionable but necessary as the name can't be mutated
-        self._logger = PlayerLogger(self._name, self.gamecode, self._client.address)
+        self._update_logger()
 
     @property
     def is_ready(self) -> bool:
@@ -92,8 +91,7 @@ class Player:
     @gamecode.setter
     def gamecode(self, gamecode: str):
         self._gamecode = gamecode
-        # changing the logger. this setup is questionable but necessary as the gamecode can't be mutated
-        self._logger = PlayerLogger(self._name, self.gamecode, self._client.address)
+        self._update_logger()
 
     def read_package(self, **kwargs) -> Optional[BBCPackage]:
         """read a package if available (wraps TCPClient.read_package())
@@ -114,3 +112,8 @@ class Player:
             package (BBCPackage): package to send
         """
         self._client.send_package(package=package, **kwargs)
+
+    def _update_logger(self):
+        """small function to update the logger"""
+        self._logger = PlayerLogger(self._name, self.gamecode, self._client.address[0], self._client.address[1])
+        self._client.logger = self._logger
