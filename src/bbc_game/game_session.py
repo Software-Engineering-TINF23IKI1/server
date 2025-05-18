@@ -5,6 +5,7 @@ from threading import Thread
 from bbc_server import Player
 import bbc_server
 import time
+import bbc_game.configs
 
 import bbc_server.packages
 
@@ -19,6 +20,9 @@ class GameSession:
         self.point_earn_system = None
         self.end_condition = None
         self.shop = None
+
+        self.game_config_factory = bbc_game.configs.default_game_config_factory
+        self.game_config = None
 
         # Start the game lobby loop
         self.thread = Thread(target=self.lobby_loop)
@@ -68,12 +72,18 @@ class GameSession:
             time.sleep(0.1)
 
         if self.state == GameState.Running:
-            # Send Game Starting Package to players
+            self.game_config = self.game_config_factory.create_game_config()
 
             for player in self.players:
+                # Send Game Starting Package to players
                 player.send_package(
                     bbc_server.packages.GameStartPackage()
                 )
+                # Update player values according to game config
+                player.currency = self.game_config.base_currency
+                player.earn_rate = self.game_config.base_earn_rate
+                player._click_modifier = self.game_config.base_modifier
+
             self.game_loop()
 
 
