@@ -21,8 +21,7 @@ class GameSession:
         self.end_condition = None
         self.shop = None
 
-        self.game_config_factory = bbc_game.configs.default_game_config_factory
-        self.game_config = None
+        self.game_config = bbc_game.configs.default_game_config_factory.create_game_config()
 
         # Start the game lobby loop
         self.thread = Thread(target=self.lobby_loop)
@@ -72,8 +71,6 @@ class GameSession:
             time.sleep(0.1)
 
         if self.state == GameState.Running:
-            self.game_config = self.game_config_factory.create_game_config()
-
             for player in self.players:
                 # Send Game Starting Package to players
                 player.send_package(
