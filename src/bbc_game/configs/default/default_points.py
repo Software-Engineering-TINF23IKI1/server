@@ -1,4 +1,4 @@
-from bbc_game.point_earning import PointDistributerFactory
+from bbc_game.point_distribution import PointDistributerFactory
 from datetime import timedelta
 
 default_point_distributer_factory = PointDistributerFactory(
