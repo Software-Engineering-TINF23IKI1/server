@@ -1,26 +1,13 @@
-from abc import ABC
 from bbc_game._typing import PointEarningFunctionType
 import datetime
 
-class BasePointEarning(ABC):
-    """Base Class for custom Point earning conditions
+class PointDistributer:
+    def __init__(self, point_distribution: dict[int, PointEarningFunctionType], point_interval: datetime.timedelta):
+        if -1 not in point_distribution:
+            raise ValueError("point_distribution in Point Earning Systems must provide a default case with the key -1")
 
-    ClassVars:
-    - point_distribution: dictionary mapping the players rank to an point earning function
-    - point_interval: interval to distribute points at
-
-    """
-    point_distribution: dict[int, PointEarningFunctionType] = None
-    point_interval: datetime.timedelta = None
-
-    def __init__(self):
-        if not self.point_distribution:
-            raise NotImplementedError("Point Earning Systems must provide the point_distribution classvar")
-        if -1 not in self.point_distribution:
-            raise NotImplementedError("point_distribution classvar Point Earning Systems must provide a default case with the key -1")
-
-        if not self.point_interval:
-            raise NotImplementedError("Point Earning Systems must provide the point_interval classvar")
+        self.point_distribution = point_distribution
+        self.point_interval = point_interval
 
         self._tick_time: datetime.datetime = None  # Variable holding the last point update time
         self._tick_count: int = 0  # Variable holding the number of point updates to perform
@@ -61,3 +48,16 @@ class BasePointEarning(ABC):
             for _ in range(self._tick_count):
                 current_points = self.point_distribution[-1](current_points)
             return current_points
+
+class PointDistributerFactory:
+    def __init__(self, point_distribution: dict[int, PointEarningFunctionType], point_interval: datetime.timedelta):
+        self.point_distribution = point_distribution
+        self.point_interval = point_interval
+
+    def create_point_earner(self) -> PointDistributer:
+        """Creates a new PointDistributer object using the config provided to the factory
+
+        Returns:
+            PointDistributer: A new PointDistributer object
+        """
+        return PointDistributer(point_distribution=self.point_distribution, point_interval=self.point_interval)
