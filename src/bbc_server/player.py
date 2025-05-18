@@ -69,6 +69,14 @@ class Player:
     def earn_rate(self, earn_rate: float) -> float:
         self._earn_rate = earn_rate
 
+    @property
+    def click_modifier(self) -> float:
+        return self._click_modifier
+
+    @click_modifier.setter
+    def click_modifier(self, click_modifier: float) -> float:
+        self._click_modifier = click_modifier
+
     def read_package(self, **kwargs) -> Optional[BBCPackage]:
         """read a package if available (wraps TCPClient.read_package())
         If a package is invalid the next package is automatically read.
