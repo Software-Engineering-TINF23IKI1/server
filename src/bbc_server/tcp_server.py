@@ -9,6 +9,7 @@ import signal
 import socket
 from bbc_server import Player
 from typing import Optional
+from bbc_server.server_logging import ServerLogger
 
 class TcpServer:
     def __init__(self, host: str, port: int):
@@ -28,6 +29,7 @@ class TcpServer:
         self.players = []
         self.game_sessions = {}
         self._package_listener_thread = Thread(target=self._package_listener)
+        self._logger = ServerLogger()
 
 
     def start(self):
@@ -40,7 +42,7 @@ class TcpServer:
         except:
             pass
         self._package_listener_thread.start()
-        print(f">>> Server listening on [{self._host or 'localhost'}:{self._port}]")
+        self._logger.info(f"Server listening on [{self._host or 'localhost'}:{self._port}]")
         self._connection_listener()
 
 
@@ -50,7 +52,7 @@ class TcpServer:
         while self._is_server_running:
             try:
                 (client, address) = self._server.accept()
-                print(f">>> Handling new client from [{address}]")
+                self._logger.info(f"Handling new client from [{address}]")
                 self.players.append(Player(TcpClient(client, address)))
             except BlockingIOError:
                 time.sleep(1)
@@ -68,10 +70,12 @@ class TcpServer:
                     # Creates a new game session and adds the current player to the session
                     player.name = package.playername
                     session = self.create_game_session()
+                    player.gamecode = session.code
                     session.add_player(player)
                     self.players.remove(player)
                 elif isinstance(package, ConnectToGameSessionPackage):
                     if package.gamecode in self.game_sessions.keys():
+                        player.gamecode = package.gamecode
                         player.name = package.playername
                         self.game_sessions[package.gamecode].add_player(player)
                         self.players.remove(player)
@@ -94,24 +98,24 @@ class TcpServer:
         if not self._is_server_running:
             return
 
-        print(">>> Stopping server...")
+        self._logger.info("Stopping server ...")
         self._is_server_running = False
 
         for player in self.players:
             player.client.shutdown()
 
         for session in self.game_sessions.values():
-            print(f">>> Killing game session [{session.code}]...")
+            self._logger.info(f"Killing game session [{session.code}]...")
             session.state = GameState.Kill
             session.thread.join()
             session.cleanup()
 
         # Stop package listener
-        print(">>> Killing main tcp server...")
+        self._logger.info("Killing main tcp server ...")
         self._package_listener_thread.join()
         self._server.close()
 
-        print(">>> Server sucessfully closed!")
+        self._logger.info("Server shutdown successfull.")
 
     def create_game_session(self) -> GameSession:
         """Creates a new game session and adds it to the game session dictionary
@@ -121,7 +125,7 @@ class TcpServer:
         """
         session = GameSession()
         self.game_sessions[session.code] = session
-        print(f">>> Created new game session with code [{session.code}]")
+        self._logger.info(f"Created new game session with code [{session.code}]")
         return session
 
 

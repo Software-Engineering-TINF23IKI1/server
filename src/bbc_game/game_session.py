@@ -5,6 +5,7 @@ import bbc_server.packages
 from threading import Thread
 from bbc_server import Player
 from bbc_server._typing import BBCPackage
+from bbc_server.server_logging import SessionLogger
 import bbc_server
 import time
 
@@ -27,6 +28,7 @@ class GameSession:
         # Start the game lobby loop
         self.thread = Thread(target=self.lobby_loop)
         self.thread.start()
+        self._logger = SessionLogger(gamecode=self.code)
 
     def update_player_list(self):
         self.players = [player for player in self.players if player.client.is_running]
@@ -103,7 +105,7 @@ class GameSession:
         if self.state != GameState.Preperation:
             return False
 
-        print(f">>> {player.name or 'Player'} [{player.client.address}] joined Session [{self.code}]")
+        self._logger.info(f"{player.name or 'Player'} [{player.client.address}] joined Session [{self.code}]")
         self.players.append(player)
         return True
 

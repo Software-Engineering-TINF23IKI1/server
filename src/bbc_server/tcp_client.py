@@ -2,6 +2,7 @@ import socket
 from typing import Optional
 from bbc_server._typing import BBCPackage
 from bbc_server.packages import Decoder, PackageParsingExceptionPackage
+from bbc_server.server_logging import PlayerLogger
 from json import JSONDecodeError
 from threading import Thread
 import time
@@ -10,7 +11,7 @@ from bbc_server.exceptions import InvalidPackageTypeException, InvalidBodyExcept
 class TcpClient:
     PACKET_SEPERATOR = '\x1E'
 
-    def __init__(self, client: socket.socket, address: socket.AddressInfo):
+    def __init__(self, client: socket.socket, address: socket.AddressInfo, logger: Optional[PlayerLogger] = None):
         """Creates a Tcp_client object from a given tcp socket and connection address
 
         Args:
@@ -26,9 +27,18 @@ class TcpClient:
         self.is_running = True
 
         self._outgoing_queue = list()
+        self._logger = logger
         # Start a thread for sending packages to the client
         self.thread = Thread(target=self._send_message_thread)
         self.thread.start()
+
+    @property
+    def logger(self) -> Optional[PlayerLogger]:
+        return self._logger
+    
+    @logger.setter
+    def logger(self, logger: PlayerLogger):
+        self._logger = logger
 
     def _send_message_thread(self):
         """Sends elements of the outgoing queue
@@ -38,7 +48,8 @@ class TcpClient:
                 try:
                     self._client.sendall((self._outgoing_queue.pop(0) + TcpClient.PACKET_SEPERATOR).encode())
                 except (ConnectionResetError, ConnectionAbortedError):
-                    print(f">>> client [{self.address}] lost connection")
+                    if self._logger:
+                        self._logger.info("lost connection")
                     self.is_running = False
                     return
 
@@ -74,7 +85,8 @@ class TcpClient:
                 self._text += data.decode()
         except (ConnectionResetError, ConnectionAbortedError):
             self.is_running = False
-            print(f">>> client [{self.address}] lost connection")
+            if self._logger:
+                self._logger.info("lost connection")
             return False
         except BlockingIOError:
             return False
@@ -114,9 +126,10 @@ class TcpClient:
         Returns:
             Optional[BBCPackage]: input package
         """
+        package = None
         while self.has_content():
             try:
-                return Decoder.deserialize(self.read_string())
+                package = Decoder.deserialize(self.read_string())
             except JSONDecodeError as e:
                 details = {
                     "raw_msg": str(e)
@@ -132,6 +145,8 @@ class TcpClient:
                     "raw_msg": str(e)
                 }
                 self.send_package(PackageParsingExceptionPackage(stage="Body", details=details))
+
+            return package
 
 
     def send_package(self, package: BBCPackage, **kwargs) -> None:
