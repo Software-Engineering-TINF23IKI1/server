@@ -1,4 +1,4 @@
-from bbc_game.game_config import GameConfigFactory
+from bbc_game.configs.game_config import GameConfigFactory
 from bbc_game.configs.default.default_shop import DefaultShop
 from bbc_game.configs.default.default_points import DefaultPointEarning
 
