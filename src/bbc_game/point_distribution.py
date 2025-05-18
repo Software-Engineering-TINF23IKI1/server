@@ -51,8 +51,8 @@ class PointDistributer:
 
 class PointDistributerFactory:
     def __init__(self, point_distribution: dict[int, PointEarningFunctionType], point_interval: datetime.timedelta):
-        self.point_distribution = point_distribution
-        self.point_interval = point_interval
+        self.__point_distribution = point_distribution
+        self.__point_interval = point_interval
 
     def create_point_earner(self) -> PointDistributer:
         """Creates a new PointDistributer object using the config provided to the factory
@@ -60,4 +60,4 @@ class PointDistributerFactory:
         Returns:
             PointDistributer: A new PointDistributer object
         """
-        return PointDistributer(point_distribution=self.point_distribution, point_interval=self.point_interval)
+        return PointDistributer(point_distribution=self.__point_distribution, point_interval=self.__point_interval)
