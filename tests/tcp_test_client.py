@@ -8,7 +8,7 @@ from typing import Optional
 from json import JSONDecodeError
 from threading import Thread
 import logging
-from tests import TEST_CONFIG
+from tests.utils.logging import TEST_LOGGER
 
 
 BBC_SERVER_DIR = pathlib.Path(__file__).parent.parent / "src"
@@ -59,7 +59,7 @@ class TcpTestClient:
                 self._text += data.decode()
         except (ConnectionResetError, ConnectionAbortedError):
             self._is_running = False
-            print(f">>> client lost connection")
+            TEST_LOGGER.info("client lost connection")
             return False
         except BlockingIOError:
             return False
@@ -93,7 +93,7 @@ class TcpTestClient:
         try:
             self._client.sendall((content + self.PACKET_SEPERATOR).encode())
         except (ConnectionResetError, ConnectionAbortedError):
-            print(f">>> client lost connection")
+            TEST_LOGGER.info("client lost connection")
             self._is_running = False
 
     def read_package(self, **kwargs) -> Optional[BBCPackage]:
@@ -103,24 +103,28 @@ class TcpTestClient:
         Returns:
             Optional[BBCPackage]: input package
         """
+        package = None
         while self.has_content():
             try:
-                return Decoder.deserialize(self.read_string())
+                package =  Decoder.deserialize(self.read_string())
             except JSONDecodeError as e:
                 details = {
                     "raw_msg": str(e)
                 }
-                print(PackageParsingExceptionPackage(stage="JSON", details=details))
+                TEST_LOGGER.warning(PackageParsingExceptionPackage(stage="JSON", details=details))
             except InvalidPackageTypeException as e:
                 details = {
                     "raw_msg": str(e)
                 }
-                print(PackageParsingExceptionPackage(stage="Package-Type", details=details))
+                TEST_LOGGER.warning(PackageParsingExceptionPackage(stage="Package-Type", details=details))
             except InvalidBodyException as e:
                 details = {
                     "raw_msg": str(e)
                 }
-                print(PackageParsingExceptionPackage(stage="Body", details=details))
+                TEST_LOGGER.warning(PackageParsingExceptionPackage(stage="Body", details=details))
+            
+
+            return package
 
     def send_package(self, package: BBCPackage, **kwargs) -> None:
         """send package to the Client

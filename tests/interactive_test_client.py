@@ -11,6 +11,7 @@ from typing import Callable, Optional, Any
 import typing
 import types
 import ast
+from tests.utils.logging import TEST_LOGGER
 
 
 BBC_SERVER_DIR = pathlib.Path(__file__).parent.parent / "src"
@@ -44,7 +45,7 @@ class InteractiveTestClient(TcpTestClient):
                 if self.filter_function:
                     pkg = self.filter_function(pkg)
                 if pkg:
-                    print(pkg)
+                    TEST_LOGGER.debug(pkg)
             time.sleep(self.listener_delay)
 
     def _generate_pkg_string(self):
@@ -93,7 +94,7 @@ class InteractiveTestClient(TcpTestClient):
             return bool(value)
         elif target_type == str:
             return value
-        
+
 
 def main():
 
