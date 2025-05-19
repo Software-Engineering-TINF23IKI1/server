@@ -36,6 +36,7 @@ packages sent from client to server
 | [connect-to-game-session](#connect-to-game-session) | before game | event      | 1[^1]          |
 | [status-update](#status-update)                     | lobby       | event      | N              |
 | [player-clicks](#player-clicks)                     | game        | periodical | N              |
+| [shop-purchase-request](#shop-purchase-request)     | game        | event      | N              |
 
 [^1]: package can be sent N times but only once succefully.
 
