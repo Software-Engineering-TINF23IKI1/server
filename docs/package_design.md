@@ -318,6 +318,8 @@ This package is sent on event if a shop purchase was successfull.
 {
     "type": "shop-purchase-confirmation",
     "body": {
+        "name": "Passive Income",
+        "tier": 2  // tiered upgrades include tier of the upgrade
     }
 }
 ```
