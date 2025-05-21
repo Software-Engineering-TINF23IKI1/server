@@ -46,12 +46,15 @@ class TcpClient:
         while self.is_running:
             while self._outgoing_queue:
                 try:
-                    self._client.sendall((self._outgoing_queue.pop(0) + TcpClient.PACKET_SEPERATOR).encode())
+                    pkg = self._outgoing_queue.pop(0)
+                    self._client.sendall((pkg + TcpClient.PACKET_SEPERATOR).encode())
                 except (ConnectionResetError, ConnectionAbortedError):
                     if self._logger:
                         self._logger.info("lost connection")
                     self.is_running = False
                     return
+                else:
+                    self._logger.debug(f"Sent package: {pkg}")
 
             time.sleep(0.1)
 
@@ -66,6 +69,7 @@ class TcpClient:
         except ConnectionResetError:
             pass
         self._client.close()
+        self._logger.debug("Closing client.")
 
 
     def has_content(self) -> bool:
@@ -131,23 +135,27 @@ class TcpClient:
         """
         package = None
         while self.has_content():
+            raw_str = self.read_string()
             try:
-                package = Decoder.deserialize(self.read_string())
+                package = Decoder.deserialize(raw_str)
             except JSONDecodeError as e:
                 details = {
                     "raw_msg": str(e)
                 }
                 self.send_package(PackageParsingExceptionPackage(stage="JSON", details=details))
+                self._logger.debug(f"Invalid package, stage=JSON, msg={raw_str}")
             except InvalidPackageTypeException as e:
                 details = {
                     "raw_msg": str(e)
                 }
                 self.send_package(PackageParsingExceptionPackage(stage="Package-Type", details=details))
+                self._logger.debug(f"Invalid package, stage=Package-Type, msg={raw_str}")
             except InvalidBodyException as e:
                 details = {
                     "raw_msg": str(e)
                 }
                 self.send_package(PackageParsingExceptionPackage(stage="Body", details=details))
+                self._logger.debug(f"Invalid package, stage=Body, msg={raw_str}")
 
             return package
 

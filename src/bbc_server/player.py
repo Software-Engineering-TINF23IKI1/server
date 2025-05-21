@@ -59,6 +59,7 @@ class Player:
     @is_ready.setter
     def is_ready(self, is_ready: bool) -> None:
         self._is_ready = is_ready
+        self._logger.debug(f"Status changed. New status: {self._is_ready}")
 
     @property
     def currency(self) -> float:
@@ -126,3 +127,7 @@ class Player:
         """small function to update the logger"""
         self._logger = PlayerLogger(self._name, self.gamecode, self._client.address[0], self._client.address[1])
         self._client.logger = self._logger
+
+    @property
+    def logger(self) -> PlayerLogger:
+        return self._logger

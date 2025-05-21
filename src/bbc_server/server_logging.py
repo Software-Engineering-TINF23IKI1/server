@@ -1,8 +1,10 @@
 """logging for the BBC server"""
 import logging
 import sys
+import pathlib
 from typing import Optional
 from bbc_server import CONFIG
+import os
 
 
 class BaseAdapter(logging.LoggerAdapter):
@@ -82,14 +84,18 @@ class DetailedFormatter(logging.Formatter):
 
 
 formatter = DetailedFormatter(
-    fmt='[%(asctime)s] [%(levelname)s] [source=%(source)s] %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    fmt="[%(asctime)s.%(msecs)03d] [%(levelname)s] [source=%(source)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
 )
 
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 stream_handler.setLevel(str(CONFIG.get("logging", "STREAM_LEVEL")))
 
+filepath = pathlib.Path(str(CONFIG.get("logging", "FILE")))
+if not os.path.isfile(filepath):
+    dir = filepath.parent
+    dir.mkdir(parents=True, exist_ok=True)
 file_handler = logging.FileHandler(str(CONFIG.get("logging", "FILE")))
 file_handler.setFormatter(formatter)
 file_handler.setLevel(str(CONFIG.get("logging", "FILE_LEVEL")))

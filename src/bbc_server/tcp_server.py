@@ -80,6 +80,7 @@ class TcpServer:
                         self.game_sessions[package.gamecode].add_player(player)
                         self.players.remove(player)
                     else:
+                        player.logger.info("Invalid Game Code provided.")
                         player.send_package(InvalidGameCodeExceptionPackage(package.gamecode))
                 else:
                     print(f"[{player.client.address}] {package.to_json()}")
