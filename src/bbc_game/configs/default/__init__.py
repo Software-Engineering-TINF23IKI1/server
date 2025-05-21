@@ -1,0 +1,1 @@
+from bbc_game.configs.default.default_game import default_game_config_factory

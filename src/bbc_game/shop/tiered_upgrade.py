@@ -19,6 +19,10 @@ class TieredUpgrade(Upgrade):
         super().__init__(name, description)
 
     @property
+    def upgrades(self) -> list[SingleUpgrade]:
+        return self._upgrades
+
+    @property
     def current_tier(self) -> int:
         """returns the current tier is"""
         return self._current_tier

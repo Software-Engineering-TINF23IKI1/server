@@ -8,6 +8,8 @@ from bbc_server.packages.lobby_status_package import LobbyStatusPackage
 from bbc_server.packages.player_clicks_package import PlayerClicksPackage
 from bbc_server.packages.start_game_session_package import StartGameSessionPackage
 from bbc_server.packages.status_update_package import StatusUpdatePackage
+from bbc_server.packages.shop_broadcast_package import ShopBroadcastPackage, create_ShopBroadcastPackage_from_shop
+from bbc_server.packages.shop_purchase_confirmation_package import ShopPurchaseConfirmationPackage
 
 # dictionairy to map package names to actual package classes
 PACKAGE_DICT = {
@@ -19,7 +21,9 @@ PACKAGE_DICT = {
     "lobby-status": LobbyStatusPackage,
     "player-clicks": PlayerClicksPackage,
     "start-game-session": StartGameSessionPackage,
-    "status-update": StatusUpdatePackage
+    "status-update": StatusUpdatePackage,
+    "shop-broadcast": ShopBroadcastPackage,
+    "shop-purchase-confirmation": ShopPurchaseConfirmationPackage
 }
 
 
@@ -36,5 +40,8 @@ __all__ = [
     "LobbyStatusPackage",
     "PlayerClicksPackage",
     "StartGameSessionPackage",
-    "StatusUpdatePackage"
+    "StatusUpdatePackage",
+    "ShopBroadcastPackage",
+    "create_ShopBroadcastPackage_from_shop",
+    "ShopPurchaseConfirmationPackage"
 ]

@@ -11,7 +11,7 @@ class Upgrade(ABC):
 
     def __init__(self, name: Optional[str] = None, description: Optional[str] = None):
         self.name = name
-        self.description = description
+        self.description = description if description else ""
 
     @abstractmethod
     def clone(self):

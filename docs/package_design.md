@@ -274,7 +274,7 @@ Each individual upgrade object has a `price` attribute and the optional attribut
                 "name": "Double Clicks",
                 "type": "single",
                 "target": "click_modifier",
-                "description": "This upgrade doubles the click modifier",
+                "description": "This upgrade doubles the click modifier",  // optional
                 "price": 400  // if type == "single" the price is provided
             },
             {
@@ -400,4 +400,8 @@ This package is sent once after the game ends, customized per player.
 ```
 </details>
 </div>
+
+
+### exception packages
+
 
