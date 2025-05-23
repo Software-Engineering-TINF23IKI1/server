@@ -3,17 +3,12 @@ from __future__ import annotations
 import socket
 import sys
 import pathlib
-from typing import Any, Callable
-import typing
 import os
-import time
 from typing import Optional
 from json import JSONDecodeError
 from threading import Thread
-import types
-import ast
-import signal
-
+import logging
+from tests.utils.logging import TEST_LOGGER
 
 
 BBC_SERVER_DIR = pathlib.Path(__file__).parent.parent / "src"
@@ -64,7 +59,7 @@ class TcpTestClient:
                 self._text += data.decode()
         except (ConnectionResetError, ConnectionAbortedError):
             self._is_running = False
-            print(f">>> client lost connection")
+            TEST_LOGGER.info("client lost connection")
             return False
         except BlockingIOError:
             return False
@@ -98,7 +93,7 @@ class TcpTestClient:
         try:
             self._client.sendall((content + self.PACKET_SEPERATOR).encode())
         except (ConnectionResetError, ConnectionAbortedError):
-            print(f">>> client lost connection")
+            TEST_LOGGER.info("client lost connection")
             self._is_running = False
 
     def read_package(self, **kwargs) -> Optional[BBCPackage]:
@@ -108,24 +103,28 @@ class TcpTestClient:
         Returns:
             Optional[BBCPackage]: input package
         """
+        package = None
         while self.has_content():
             try:
-                return Decoder.deserialize(self.read_string())
+                package =  Decoder.deserialize(self.read_string())
             except JSONDecodeError as e:
                 details = {
                     "raw_msg": str(e)
                 }
-                print(PackageParsingExceptionPackage(stage="JSON", details=details))
+                TEST_LOGGER.warning(PackageParsingExceptionPackage(stage="JSON", details=details))
             except InvalidPackageTypeException as e:
                 details = {
                     "raw_msg": str(e)
                 }
-                print(PackageParsingExceptionPackage(stage="Package-Type", details=details))
+                TEST_LOGGER.warning(PackageParsingExceptionPackage(stage="Package-Type", details=details))
             except InvalidBodyException as e:
                 details = {
                     "raw_msg": str(e)
                 }
-                print(PackageParsingExceptionPackage(stage="Body", details=details))
+                TEST_LOGGER.warning(PackageParsingExceptionPackage(stage="Body", details=details))
+            
+
+            return package
 
     def send_package(self, package: BBCPackage, **kwargs) -> None:
         """send package to the Client
@@ -139,85 +138,3 @@ class TcpTestClient:
         self._is_running = False
         self._client.shutdown(socket.SHUT_RDWR)
 
-
-class InteractiveTestClient(TcpTestClient):
-
-    def __init__(self, ip, port, listener_delay: float = 0.5, filter_function: Optional[Callable] = None):
-        super().__init__(ip, port)
-        self.listener_delay = listener_delay
-        self.filter_function = filter_function
-
-    def make_interactive(self):
-        signal.signal(signal.SIGINT, self._stop)
-        self._listener_thread = Thread(target=self._listen_to_packages)
-        self._listener_thread.start()
-        self._package_input_loop()
-
-    def _listen_to_packages(self):
-        while self._is_running:
-            while pkg := self.read_package():
-                if self.filter_function:
-                    pkg = self.filter_function(pkg)
-                if pkg:
-                    print(pkg)
-            time.sleep(self.listener_delay)
-
-    def _generate_pkg_string(self):
-        package_str = "raw string input [-1]; "
-        packages = bbc_server.packages.PACKAGE_DICT
-        for idx, package in enumerate(packages.keys()):
-            package_str += f"{package} [{idx}]; "
-        return package_str
-
-    def _package_input_loop(self):
-        packages = bbc_server.packages.PACKAGE_DICT
-        while True:
-            print("Please select from the list of packages:")
-            print(self._generate_pkg_string())
-            selection = int(input("Type number to select: "))
-            if selection == -1:
-                self.send_string(input("raw string input: "))
-                continue
-            package_class = list(packages.values())[selection]
-            cls_parameters = {}
-            hints = typing.get_type_hints(package_class.__init__)
-
-            for key, parameter in package_class.JSON_PARAM_MAP.items():
-                param_type = hints[parameter]
-                if isinstance(param_type, types.GenericAlias) and "dict" in str(param_type):
-                    # handle dict inputs
-                    cls_parameters[parameter] = dict(ast.literal_eval(input(f"{key} (as raw dict): ")))
-                else:
-                    param_in = input(f"{key}: ")
-                    cls_parameters[parameter] = self._cast_objects(param_in, param_type)
-
-            # create package
-            package = package_class(**cls_parameters)
-            self.send_package(package)
-
-    def _stop(self, signum, frame):
-        self._is_running = False
-        self._listener_thread.join()
-
-    def _cast_objects(self, value: str, target_type: Any):
-        if target_type == int:
-            return int(value)
-        elif target_type == float:
-            return float(value)
-        elif target_type == bool:
-            return bool(value)
-        elif target_type == str:
-            return value
-
-
-def main():
-    from tests import TEST_CONFIG
-
-    IP = str(TEST_CONFIG.get("test_server", "IP")).strip()
-    PORT = int(TEST_CONFIG.get("test_server", "PORT").strip())
-    client = InteractiveTestClient(IP, PORT)
-    client.make_interactive()
-
-
-if __name__ == "__main__":
-    main()

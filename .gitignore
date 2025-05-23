@@ -168,6 +168,7 @@ cython_debug/
 
 # own additions
 tests/config.ini
+**/logs/**
 
 
 #MacOS
