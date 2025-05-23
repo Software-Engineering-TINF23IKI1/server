@@ -121,20 +121,11 @@ class TcpClient:
             try:
                 return Decoder.deserialize(self.read_string())
             except JSONDecodeError as e:
-                details = {
-                    "raw_msg": str(e)
-                }
-                self.send_package(PackageParsingExceptionPackage(stage="JSON", details=details))
+                self.send_package(PackageParsingExceptionPackage(stage="JSON", raw_msg=str(e)))
             except InvalidPackageTypeException as e:
-                details = {
-                    "raw_msg": str(e)
-                }
-                self.send_package(PackageParsingExceptionPackage(stage="Package-Type", details=details))
+                self.send_package(PackageParsingExceptionPackage(stage="Package-Type", raw_msg=str(e)))
             except InvalidBodyException as e:
-                details = {
-                    "raw_msg": str(e)
-                }
-                self.send_package(PackageParsingExceptionPackage(stage="Body", details=details))
+                self.send_package(PackageParsingExceptionPackage(stage="Body", raw_msg=str(e)))
 
 
     def send_package(self, package: BBCPackage, **kwargs) -> None:

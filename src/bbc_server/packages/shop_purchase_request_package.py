@@ -21,7 +21,7 @@ class ShopPurchaseRequestPackage(BasePackage):
 
     def _generate_body_dict(self) -> dict:
         dict_repr = {
-            "upgrade-name": self.__name
+            "upgrade-name": self.__upgrade_name
             }
         if self.__tier:
             dict_repr["tier"] = self.__tier

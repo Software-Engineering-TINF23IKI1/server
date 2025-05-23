@@ -404,4 +404,70 @@ This package is sent once after the game ends, customized per player.
 
 ### exception packages
 
+All packages may include additional attributes in the `details` and should be parsed based purely based on the name.
+
+
+<div id="PackageParsingExceptionPackage">
+<details>
+<summary>PackageParsingExceptionPackage</summary>
+
+```json
+{
+    "type": "exception",
+    "body": {
+        "name": "PackageParsingException",
+        "details": {
+            "stage": "JSON",  // stage of package decoding ('JSON', 'Package-Type', 'Body')
+            "raw_msg": ""  // raw error message
+        }
+    }
+}
+```
+
+</details>
+</div>
+
+
+<div id="InvalidGameCodeExceptionPackage">
+<details>
+<summary>InvalidGameCodeExceptionPackage</summary>
+
+```json
+{
+    "type": "exception",
+    "body": {
+        "name": "InvalidGameCodeExceptionPackage",
+        "details": {
+            "code": ""  // game code provided
+        }
+    }
+}
+```
+
+</details>
+</div>
+
+
+<div id="InvalidShopTransaction">
+<details>
+<summary>InvalidShopTransaction</summary>
+
+```json
+{
+    "type": "exception",
+    "body": {
+        "name": "InvalidShopTransaction",
+        "details": {
+            "stage": "",  // stage of shop validation at which the transaction failed
+            "upgrade_name": "",  // name of the upgrade requested
+            "upgrade_tier": 2  // tier of the upgrade requested (if a tiered upgrade was requested)
+        }
+    }
+}
+```
+
+</details>
+</div>
+
+
 
