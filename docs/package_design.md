@@ -14,7 +14,7 @@ The ASCII record seperator (`\x1e`, ASCII 30) is used to seperate individual JSO
 example JSON:
 ```json
 {
-	"type":		"name",
+	"type":	"name",
 	"body":
 	{
         // package specific information
@@ -36,6 +36,7 @@ packages sent from client to server
 | [connect-to-game-session](#connect-to-game-session) | before game | event      | 1[^1]          |
 | [status-update](#status-update)                     | lobby       | event      | N              |
 | [player-clicks](#player-clicks)                     | game        | periodical | N              |
+| [shop-purchase-request](#shop-purchase-request)     | game        | event      | N              |
 
 [^1]: package can be sent N times but only once succefully.
 
@@ -59,7 +60,7 @@ This package is sent only once and is event-driven.
 Example JSON:
 ```json
 {
-	"type":		"start-game-session",
+	"type":	"start-game-session",
 	"body":
 	{
 		"playername":	"passcht_03"
@@ -80,7 +81,7 @@ This package is sent only once and is event-driven.
 
 ```json
 {
-    "type":		"connect-to-game-session",
+    "type":	"connect-to-game-session",
 	"body":
 	{
 		"gamecode":	"A0313",
@@ -104,7 +105,7 @@ It can be sent N times per player and is event-driven.
 
 ```json
 {
-	"type":		"status-update",
+	"type":	"status-update",
 	"body":
 	{
 		"is-ready": true
@@ -125,7 +126,7 @@ This package is sent perdiodically and contains the <ins>raw clicks since last p
 
 ```json
 {
-	"type":		"player-clicks",
+	"type":	"player-clicks",
 	"body":
 	{
 		"count": 5
@@ -135,19 +136,42 @@ This package is sent perdiodically and contains the <ins>raw clicks since last p
 </details>
 </div>
 
+<div id="shop-purchase-request">
+<details>
+<summary>shop-purchase-request</summary>
+
+This package is sent when a player requests a shop purchase.
+
+```json
+{
+    "type": "shop-purchase-request",
+    "body": {
+        "upgrade-name": "Passive Income",
+        "tier": 2  // tier should only be provided for tiered upgrades and is 0-indexed
+    }
+}
+```
+
+</details>
+</div>
+
+
+
 
 # Server -> Client
 
 <details>
 <summary>overview</summary>
 
-| Package Type                      | Game Stage | Sent On    | Max Times Sent |
-|-----------------------------------|------------|------------|----------------|
-| [exception](#exception)           | global     | event      | N              |
-| [lobby-status](#lobby-status)     | lobby      | periodical | N              |
-| [game-start](#game-start)         | lobby      | event      | 1              |
-| [game-update](#game-update)       | game       | periodical | N              |
-| [end-routine](#end-routine)       | postgame   | event      | 1              |
+| Package Type                                              | Game Stage | Sent On    | Max Times Sent |
+|-----------------------------------------------------------|------------|------------|----------------|
+| [exception](#exception)                                   | global     | event      | N              |
+| [lobby-status](#lobby-status)                             | lobby      | periodical | N              |
+| [game-start](#game-start)                                 | lobby      | event      | 1              |
+| [shop-broadcast](#shop-broadcast)                         | game       | event      | 1              |
+| [shop-purchase-confirmation](#shop-purchase-confirmation) | game       | event      | N              |
+| [game-update](#game-update)                               | game       | periodical | N              |
+| [end-routine](#end-routine)                               | postgame   | event      | 1              |
 
 </details>
 
@@ -226,6 +250,85 @@ This package is sent to indicate a game start.
 
 ### game loop
 
+<div id="shop-broadcast">
+<details>
+<summary>shop-broadcast</summary>
+
+This package is sent once when the game starts and broadcasts the entire shop.
+The `shop_entries` attribute holds a list of shop entries.
+Each shop entry consists of a `name`, `type`, `target` and `description`.
+The `type` specifies whether the entry is a single upgrade or a tiered upgrade.
+The `target`specifies whether the upgrade improves the click modifier ("click_modifier") or the passive gain ("gain").
+
+If the `type` is "single" the shop entry also provides a `price` attribute.
+
+For the "tiered" `type` a `tiers` attribute is provided which holds a list of individual upgrade tiers from lowest to highest.
+Each individual upgrade object has a `price` attribute and the optional attributes `name` and `description`.
+
+```json
+{
+    "type": "shop-broadcast",
+    "body": {
+        "shop_entries": [
+            {
+                "name": "Double Clicks",
+                "type": "single",
+                "target": "click_modifier",
+                "description": "This upgrade doubles the click modifier",  // optional
+                "price": 400  // if type == "single" the price is provided
+            },
+            {
+                "name": "Passive Income",
+                "type": "tiered",
+                "target": "gain",
+                "description": "Upgrade increases passive income by 20 for each level",
+                "tiers": [  // if type == "tiered" a list of upgrade tiers is provided
+                    {
+                        "name": "Passive Income 1",  // name optional for the individual upgrade tiers
+                        "description": "",  // description optional for the individual upgrade tiers
+                        "price": 100
+                    },
+                    {
+                        "name": "Passive Income 2",  // name optional for the individual upgrade tiers
+                        "description": "",  // description optional for the individual upgrade tiers
+                        "price": 200
+                    },
+                    {
+                        "name": "Passive Income 3",  // name optional for the individual upgrade tiers
+                        "description": "",  // description optional for the individual upgrade tiers
+                        "price": 300
+                    }
+                ]
+            }
+        ]
+    }
+}
+```
+</details>
+</div>
+
+
+<div id="shop-purchase-confirmation">
+<details>
+<summary>shop-purchase-confirmation</summary>
+
+This package is sent on event if a shop purchase was successfull.
+
+```json
+{
+    "type": "shop-purchase-confirmation",
+    "body": {
+        "name": "Passive Income",
+        "tier": 2  // tiered upgrades include tier of the upgrade
+    }
+}
+```
+
+</details>
+</div>
+
+
+
 <div id="game-update">
 <details>
 <summary>game-update</summary>
@@ -297,4 +400,74 @@ This package is sent once after the game ends, customized per player.
 ```
 </details>
 </div>
+
+
+### exception packages
+
+All packages may include additional attributes in the `details` and should be parsed based purely based on the name.
+
+
+<div id="PackageParsingExceptionPackage">
+<details>
+<summary>PackageParsingExceptionPackage</summary>
+
+```json
+{
+    "type": "exception",
+    "body": {
+        "name": "PackageParsingException",
+        "details": {
+            "stage": "JSON",  // stage of package decoding ('JSON', 'Package-Type', 'Body')
+            "raw_msg": ""  // raw error message
+        }
+    }
+}
+```
+
+</details>
+</div>
+
+
+<div id="InvalidGameCodeExceptionPackage">
+<details>
+<summary>InvalidGameCodeExceptionPackage</summary>
+
+```json
+{
+    "type": "exception",
+    "body": {
+        "name": "InvalidGameCodeExceptionPackage",
+        "details": {
+            "code": ""  // game code provided
+        }
+    }
+}
+```
+
+</details>
+</div>
+
+
+<div id="InvalidShopTransaction">
+<details>
+<summary>InvalidShopTransaction</summary>
+
+```json
+{
+    "type": "exception",
+    "body": {
+        "name": "InvalidShopTransaction",
+        "details": {
+            "stage": "",  // stage of shop validation at which the transaction failed
+            "upgrade_name": "",  // name of the upgrade requested
+            "upgrade_tier": 2  // tier of the upgrade requested (if a tiered upgrade was requested)
+        }
+    }
+}
+```
+
+</details>
+</div>
+
+
 

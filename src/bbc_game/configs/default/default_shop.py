@@ -2,8 +2,8 @@ from bbc_game.shop import TieredUpgrade, ClickUpgrade, GainUpgrade, BaseShop
 
 
 class DefaultShop(BaseShop):
-    shop_entries = {
-        "Better Clicks": TieredUpgrade(
+    shop_entries = [
+        TieredUpgrade(
             [
                 ClickUpgrade(20, lambda x: x + 1, "Better Clicks 1"),
                 ClickUpgrade(30, lambda x: x + 1, "Better Clicks 2"),
@@ -12,7 +12,7 @@ class DefaultShop(BaseShop):
             "Better Clicks",
             "increases click modifier by 1 per level"
         ),
-        "Passive Income": TieredUpgrade(
+        TieredUpgrade(
             [
                 GainUpgrade(50, lambda x: x * 2, "Passive Income 1"),
                 GainUpgrade(100, lambda x: x * 2, "Passive Income 2"),
@@ -21,4 +21,4 @@ class DefaultShop(BaseShop):
             "Passive Income",
             "doubles passive gain for every level purchased"
         )
-    }
+    ]

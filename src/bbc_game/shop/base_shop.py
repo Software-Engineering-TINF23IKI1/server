@@ -8,7 +8,7 @@ class BaseShop(ABC):
     - shop_entries: dictionairy holding the different upgrades
 
     """
-    shop_entries: dict[str, Upgrade] = None
+    shop_entries: list[Upgrade] = None
 
     def __init__(self):
         if not self.shop_entries:
