@@ -50,22 +50,22 @@ class GameSession:
                 {"playername": inner_player.name, "is-ready": inner_player.is_ready}
                 for inner_player in self.players]
             for player in self.players:
-                player.send_package(
+                """ player.send_package(
                     bbc_server.packages.LobbyStatusPackage(
                         self.code,
                         players=player_list
                     )
-                )
+                ) """
 
             all_players_ready = all(player["is-ready"] for player in player_list)
-            # Icrease iterator if all Players are ready
+            # Increase iterator if all Players are ready
             if all_players_ready:
                 loop_iteration += 1
 
             if not all_players_ready:
                 loop_iteration = 0  # Reset Loop Iteration Counter so waiting for all players restarts
 
-            if all_players_ready and loop_iteration >= 400:
+            if all_players_ready and loop_iteration >= 3:
                 self.state = GameState.Running
 
 
@@ -91,29 +91,34 @@ class GameSession:
                     match received_package:
                         case bbc_server.packages.PlayerClicksPackage():
                             player.currency     +=  received_package.count
-                            scoreboard[player]  = player.currency
+                            scoreboard[player]  = player.points
                         case _:
                             pass  # Logging
             
             scoreboard = dict(
                 sorted(scoreboard.items(), key=lambda item: item[1])[:3]
             )
+            scoreboard_array = []
             for item in scoreboard.items():
-                scoreboard_dict += {
-                    "playername"    : item[0], 
+                scoreboard_array += {
+                    "playername"    : item[0].name, 
                     "score"         : item[1]
                 }
+            
 
             # Send game-update package to each player
             for player in self.players:
                 player.send_package(
-                    bbc_server.packages.game_update_package(
-                        
+                    bbc_server.packages.GameUpdatePackage(
+                        player.currency,
+                        player.points,
+                        scoreboard_array
                     )
                 )
 
 
-            pass  # Check end condition
+            # Check end condition
+            if ()
 
             time.sleep(0.1)
 
