@@ -103,7 +103,7 @@ class GameSession:
                             pass  # Logging
             
             scoreboard = dict(
-                sorted(scoreboard.items(), key=lambda item: item[1])[:3]
+                sorted(scoreboard.items(), key=lambda item: item[1])[:self.game_config.base_top_players]
             )
             scoreboard_array = []
             for item in scoreboard.items():
@@ -125,7 +125,8 @@ class GameSession:
 
 
             # Check end condition
-            if ()
+            if (player.points > self.game_config.base_endcondition):
+                self.state = GameState.Ended
 
             time.sleep(0.1)
 
