@@ -1,16 +1,15 @@
 from bbc_game.game_state import GameState
 from bbc_game.game_code import generate_game_code, unregister_game_code
-import bbc_server._typing
 import bbc_server.packages
 from threading import Thread
 from bbc_server import Player
+from bbc_server.server_logging import SessionLogger
 import bbc_server
 import time
+import bbc_game.configs
 
-import bbc_server.exceptions
 import bbc_server.packages
 import bbc_server.packages.game_update_package
-import bbc_server.packages.status_update_package
 
 class GameSession:
     def __init__(self):
@@ -24,9 +23,12 @@ class GameSession:
         self.end_condition = None
         self.shop = None
 
+        self.game_config = bbc_game.configs.default_game_config_factory.create_game_config()
+
         # Start the game lobby loop
         self.thread = Thread(target=self.lobby_loop)
         self.thread.start()
+        self._logger = SessionLogger(gamecode=self.code)
 
     def update_player_list(self):
         self.players = [player for player in self.players if player.client.is_running]
@@ -50,12 +52,13 @@ class GameSession:
                 {"playername": inner_player.name, "is-ready": inner_player.is_ready}
                 for inner_player in self.players]
             for player in self.players:
-                """ player.send_package(
+                player.send_package(
                     bbc_server.packages.LobbyStatusPackage(
                         self.code,
                         players=player_list
                     )
-                ) """
+                )
+
 
             all_players_ready = all(player["is-ready"] for player in player_list)
             # Increase iterator if all Players are ready
@@ -72,12 +75,16 @@ class GameSession:
             time.sleep(0.1)
 
         if self.state == GameState.Running:
-            # Send Game Starting Package to players
-
             for player in self.players:
+                # Send Game Starting Package to players
                 player.send_package(
                     bbc_server.packages.GameStartPackage()
                 )
+                # Update player values according to game config
+                player.currency = self.game_config.base_currency
+                player.earn_rate = self.game_config.base_earn_rate
+                player._click_modifier = self.game_config.base_modifier
+
             self.game_loop()
 
 
@@ -140,7 +147,7 @@ class GameSession:
         if self.state != GameState.Preperation:
             return False
 
-        print(f">>> {player.name or 'Player'} [{player.client.address}] joined Session [{self.code}]")
+        self._logger.info(f"{player.name or 'Player'} [{player.client.address}] joined Session [{self.code}]")
         self.players.append(player)
         return True
 

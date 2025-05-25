@@ -2,6 +2,7 @@ import socket
 from typing import Optional
 from bbc_server._typing import BBCPackage
 from bbc_server.packages import Decoder, PackageParsingExceptionPackage
+from bbc_server.server_logging import PlayerLogger
 from json import JSONDecodeError
 from threading import Thread
 import time
@@ -10,7 +11,7 @@ from bbc_server.exceptions import InvalidPackageTypeException, InvalidBodyExcept
 class TcpClient:
     PACKET_SEPERATOR = '\x1E'
 
-    def __init__(self, client: socket.socket, address: socket.AddressInfo):
+    def __init__(self, client: socket.socket, address: socket.AddressInfo, logger: Optional[PlayerLogger] = None):
         """Creates a Tcp_client object from a given tcp socket and connection address
 
         Args:
@@ -26,9 +27,18 @@ class TcpClient:
         self.is_running = True
 
         self._outgoing_queue = list()
+        self._logger = logger
         # Start a thread for sending packages to the client
         self.thread = Thread(target=self._send_message_thread)
         self.thread.start()
+
+    @property
+    def logger(self) -> Optional[PlayerLogger]:
+        return self._logger
+    
+    @logger.setter
+    def logger(self, logger: PlayerLogger):
+        self._logger = logger
 
     def _send_message_thread(self):
         """Sends elements of the outgoing queue
@@ -36,11 +46,15 @@ class TcpClient:
         while self.is_running:
             while self._outgoing_queue:
                 try:
-                    self._client.sendall((self._outgoing_queue.pop(0) + TcpClient.PACKET_SEPERATOR).encode())
+                    pkg = self._outgoing_queue.pop(0)
+                    self._client.sendall((pkg + TcpClient.PACKET_SEPERATOR).encode())
                 except (ConnectionResetError, ConnectionAbortedError):
-                    print(f">>> client [{self.address}] lost connection")
+                    if self._logger:
+                        self._logger.info("lost connection")
                     self.is_running = False
                     return
+                else:
+                    self._logger.debug(f"Sent package: {pkg}")
 
             time.sleep(0.1)
 
@@ -50,8 +64,12 @@ class TcpClient:
         self.is_running = False
         self.thread.join()
 
-        self._client.shutdown(socket.SHUT_RDWR)
+        try:
+            self._client.shutdown(socket.SHUT_RDWR)
+        except ConnectionResetError:
+            pass
         self._client.close()
+        self._logger.debug("Closing client.")
 
 
     def has_content(self) -> bool:
@@ -74,7 +92,8 @@ class TcpClient:
                 self._text += data.decode()
         except (ConnectionResetError, ConnectionAbortedError):
             self.is_running = False
-            print(f">>> client [{self.address}] lost connection")
+            if self._logger:
+                self._logger.info("lost connection")
             return False
         except BlockingIOError:
             return False
@@ -114,24 +133,31 @@ class TcpClient:
         Returns:
             Optional[BBCPackage]: input package
         """
+        package = None
         while self.has_content():
+            raw_str = self.read_string()
             try:
-                return Decoder.deserialize(self.read_string())
+                package = Decoder.deserialize(raw_str)
             except JSONDecodeError as e:
                 details = {
                     "raw_msg": str(e)
                 }
                 self.send_package(PackageParsingExceptionPackage(stage="JSON", details=details))
+                self._logger.debug(f"Invalid package, stage=JSON, msg={raw_str}")
             except InvalidPackageTypeException as e:
                 details = {
                     "raw_msg": str(e)
                 }
                 self.send_package(PackageParsingExceptionPackage(stage="Package-Type", details=details))
+                self._logger.debug(f"Invalid package, stage=Package-Type, msg={raw_str}")
             except InvalidBodyException as e:
                 details = {
                     "raw_msg": str(e)
                 }
                 self.send_package(PackageParsingExceptionPackage(stage="Body", details=details))
+                self._logger.debug(f"Invalid package, stage=Body, msg={raw_str}")
+
+            return package
 
 
     def send_package(self, package: BBCPackage, **kwargs) -> None:
