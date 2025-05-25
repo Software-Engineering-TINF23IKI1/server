@@ -9,6 +9,7 @@ import time
 
 import bbc_server.exceptions
 import bbc_server.packages
+import bbc_server.packages.game_update_package
 import bbc_server.packages.status_update_package
 
 class GameSession:
@@ -82,17 +83,35 @@ class GameSession:
 
     def game_loop(self):
         while self.state is GameState.Running:
+            scoreboard = {}
+            
             # Read Player packages
             for player in self.players:
                 while received_package := player.read_package():
                     match received_package:
-                        # TODO: interprete packages (player-click, shop package)
+                        case bbc_server.packages.PlayerClicksPackage():
+                            player.currency     +=  received_package.count
+                            scoreboard[player]  = player.currency
                         case _:
                             pass  # Logging
+            
+            scoreboard = dict(
+                sorted(scoreboard.items(), key=lambda item: item[1])[:3]
+            )
+            for item in scoreboard.items():
+                scoreboard_dict += {
+                    "playername"    : item[0], 
+                    "score"         : item[1]
+                }
 
-            pass  # Distribute points to players
+            # Send game-update package to each player
+            for player in self.players:
+                player.send_package(
+                    bbc_server.packages.game_update_package(
+                        
+                    )
+                )
 
-            pass  # Send game-update package to each player
 
             pass  # Check end condition
 
