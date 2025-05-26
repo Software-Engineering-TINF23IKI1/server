@@ -101,7 +101,12 @@ class GameSession:
                             scoreboard[player]  = player.points
                         case _:
                             pass  # Logging
-            
+
+            # Distribute Points
+            if self.game_config.point_earning.tick():
+                for rank, player in enumerate(sorted(self.players, key=lambda p: p.currency, reverse=True)):
+                    player.points = self.game_config.point_earning.earn_points(rank + 1, player.points)
+
             scoreboard = dict(
                 sorted(scoreboard.items(), key=lambda item: item[1])[:self.game_config.base_top_players]
             )
