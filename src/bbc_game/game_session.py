@@ -85,6 +85,7 @@ class GameSession:
                 player.earn_rate = self.game_config.base_earn_rate
                 player._click_modifier = self.game_config.base_modifier
 
+            self._logger.info(f"Session [{self.code}] switched state to running")
             self.game_loop()
 
 
