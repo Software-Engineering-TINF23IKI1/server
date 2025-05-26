@@ -8,6 +8,15 @@ class EndCondition(ABC):
     def is_game_end(self) -> bool:
         pass
 
+
+class EndConditionFactory(ABC):
+
+    @abstractmethod
+    def create_EndCondition(self, **kwargs) -> EndCondition:
+        """create the EndConditionObject"""
+        pass
+
+
 class TimeBasedEndCondition(EndCondition):
     
     def __init__(self, start_time: datetime.datetime, duration: datetime.timedelta):
@@ -18,11 +27,31 @@ class TimeBasedEndCondition(EndCondition):
         return datetime.datetime.now() >= self._start_time + self._duration
 
 
-class ScoreBasedEndCondition(EndCondition):
+class TimeBasedEndConditionFactory(EndConditionFactory):
 
-    def __init__(self, players: list[Player], score_goal:float):
+    def __init__(self, start_time: datetime.datetime, duration: datetime.timedelta):
+        self.__start_time = start_time
+        self.__duration = duration
+
+    def create_TimeBasedEndCondition(self) -> TimeBasedEndCondition:
+        return TimeBasedEndCondition(start_time=self.__start_time, duration=self.__duration)
+
+
+class PointBasedEndCondition(EndCondition):
+
+    def __init__(self, players: list[Player], point_goal:float):
         self._players = players
-        self._score_goal = score_goal
+        self._point_goal = point_goal
 
     def is_game_end(self):
-        return any([player.score >= self._score_goal for player in self._players])
+        return any([player.points >= self._point_goal for player in self._players])
+
+
+class PointBasedEndConditionFactory(EndConditionFactory):
+
+    def __init__(self, players: list[Player], point_goal:float):
+        self.__players = players
+        self.__point_goal = point_goal
+
+    def create_PointBasedEndCondition(self) -> PointBasedEndCondition:
+        return PointBasedEndCondition(players=self.__players, point_goal=self.__point_goal)
