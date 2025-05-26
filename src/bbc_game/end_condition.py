@@ -33,7 +33,7 @@ class TimeBasedEndConditionFactory(EndConditionFactory):
         self.__start_time = start_time
         self.__duration = duration
 
-    def create_TimeBasedEndCondition(self) -> TimeBasedEndCondition:
+    def create_EndCondition(self) -> TimeBasedEndCondition:
         return TimeBasedEndCondition(start_time=self.__start_time, duration=self.__duration)
 
 
@@ -53,5 +53,5 @@ class PointBasedEndConditionFactory(EndConditionFactory):
         self.__players = players
         self.__point_goal = point_goal
 
-    def create_PointBasedEndCondition(self) -> PointBasedEndCondition:
+    def create_EndCondition(self) -> PointBasedEndCondition:
         return PointBasedEndCondition(players=self.__players, point_goal=self.__point_goal)
