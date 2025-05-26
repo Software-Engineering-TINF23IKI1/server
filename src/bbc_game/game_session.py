@@ -90,23 +90,27 @@ class GameSession:
 
 
     def game_loop(self):
+        scoreboard = {}
         while self.state is GameState.Running:
-            scoreboard = {}
             
             # Read Player packages
             for player in self.players:
                 while received_package := player.read_package():
                     match received_package:
                         case bbc_server.packages.PlayerClicksPackage():
-                            player.currency     +=  received_package.count
-                            scoreboard[player]  = player.points
+                            player.currency     +=  received_package.count * player.click_modifier
                         case _:
                             pass  # Logging
+
 
             # Distribute Points
             if self.game_config.point_earning.tick():
                 for rank, player in enumerate(sorted(self.players, key=lambda p: p.currency, reverse=True)):
                     player.points = self.game_config.point_earning.earn_points(rank + 1, player.points)
+                    
+            for player in self.players:
+                            scoreboard[player]  = player.points
+
 
             scoreboard = dict(
                 sorted(scoreboard.items(), key=lambda item: item[1])[:self.game_config.base_top_players]
@@ -118,6 +122,8 @@ class GameSession:
                     "score"         : item[1]
                 }
             
+            print(f"scoreboard {scoreboard}")
+            print(f"scoreboard_array {scoreboard_array}")
 
             # Send game-update package to each player
             for player in self.players:
