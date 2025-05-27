@@ -23,7 +23,7 @@ class GameSession:
         self.game_config = bbc_game.configs.default_game_config_factory.create_game_config()
 
         self.point_earn_system = None
-        self.end_condition = self.game_config.base_endcondition.create_EndCondition()
+        self.end_condition = self.game_config.endcondition_factory.create_EndCondition()
 
         self.shop = None
 
