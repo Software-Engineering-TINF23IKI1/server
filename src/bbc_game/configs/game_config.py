@@ -7,7 +7,7 @@ class GameConfig:
     def __init__(self, point_earning: PointDistributer, end_condition_factory: EndConditionFactory, shop: Optional[ShopType] = None, base_currency: float = 0,
                  base_earn_rate: float = 0, base_modifier: float = 1, base_scoreboard_top_players = 5):
         self.point_earning = point_earning
-        self.base_endcondition = end_condition_factory
+        self.endcondition_factory = end_condition_factory
         self.shop = shop
         self.base_currency = base_currency
         self.base_earn_rate = base_earn_rate
