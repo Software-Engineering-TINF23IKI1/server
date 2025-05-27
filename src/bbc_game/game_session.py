@@ -23,7 +23,7 @@ class GameSession:
         self.game_config = bbc_game.configs.default_game_config_factory.create_game_config()
 
         self.point_earn_system = None
-        self.end_condition = self.game_config.endcondition_factory.create_EndCondition()
+        self.end_condition_factory = self.game_config.endcondition_factory
 
         self.shop = None
 
@@ -89,6 +89,8 @@ class GameSession:
 
             self._logger.info(f"Session [{self.code}] switched state to running")
 
+
+            self.end_condition = self.game_config.endcondition_factory.create_EndCondition()
             if isinstance(self.end_condition,bbc_game.end_condition.PointBasedEndCondition):
                 self.end_condition.add_players(players=self.players)
 
