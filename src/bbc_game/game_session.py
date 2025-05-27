@@ -113,7 +113,7 @@ class GameSession:
 
 
             scoreboard = dict(
-                sorted(scoreboard.items(), key=lambda item: item[1])[:self.game_config.base_top_players]
+                sorted(scoreboard.items(), key=lambda item: item[1])[:self.game_config.base_scoreboard_top_players]
             )
             scoreboard_array = []
             for item in scoreboard.items():
