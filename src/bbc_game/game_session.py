@@ -1,3 +1,4 @@
+import bbc_game.end_condition
 from bbc_game.game_state import GameState
 from bbc_game.game_code import generate_game_code, unregister_game_code
 import bbc_server.packages
@@ -19,11 +20,12 @@ class GameSession:
         self.players: list[Player] = []
         self.state = GameState.Preperation
 
-        self.point_earn_system = None
-        self.end_condition = None
-        self.shop = None
-
         self.game_config = bbc_game.configs.default_game_config_factory.create_game_config()
+
+        self.point_earn_system = None
+        self.end_condition = self.game_config.base_endcondition.create_EndCondition()
+
+        self.shop = None
 
         # Start the game lobby loop
         self.thread = Thread(target=self.lobby_loop)
@@ -86,6 +88,10 @@ class GameSession:
                 player._click_modifier = self.game_config.base_modifier
 
             self._logger.info(f"Session [{self.code}] switched state to running")
+
+            if isinstance(self.end_condition,bbc_game.end_condition.PointBasedEndCondition):
+                self.end_condition.add_players(players=self.players)
+
             self.game_loop()
 
 
@@ -98,7 +104,7 @@ class GameSession:
                 while received_package := player.read_package():
                     match received_package:
                         case bbc_server.packages.PlayerClicksPackage():
-                            player.currency     +=  received_package.count * player.click_modifier
+                            player.currency += received_package.count * player.click_modifier
                         case _:
                             pass  # Logging
 
@@ -108,22 +114,22 @@ class GameSession:
                 for rank, player in enumerate(sorted(self.players, key=lambda p: p.currency, reverse=True)):
                     player.points = self.game_config.point_earning.earn_points(rank + 1, player.points)
                     
-            for player in self.players:
-                            scoreboard[player]  = player.points
+            scoreboard = {player: player.points for player in self.players}
+
+            top_players = sorted(
+            scoreboard.items(),
+            key=lambda kv: kv[1],
+            reverse=True
+            )[:self.game_config.base_scoreboard_top_players]
 
 
-            scoreboard = dict(
-                sorted(scoreboard.items(), key=lambda item: item[1])[:self.game_config.base_scoreboard_top_players]
-            )
-            scoreboard_array = []
-            for item in scoreboard.items():
-                scoreboard_array += {
-                    "playername"    : item[0].name, 
-                    "score"         : item[1]
+            scoreboard_array = [
+                {
+                    "playername": player.name,
+                    "score": score
                 }
-            
-            print(f"scoreboard {scoreboard}")
-            print(f"scoreboard_array {scoreboard_array}")
+                for player, score in top_players
+            ]
 
             # Send game-update package to each player
             for player in self.players:
@@ -137,7 +143,7 @@ class GameSession:
 
 
             # Check end condition
-            if (player.points > self.game_config.base_endcondition):
+            if (self.end_condition.is_game_end()):
                 self.state = GameState.Ended
 
             time.sleep(0.1)
