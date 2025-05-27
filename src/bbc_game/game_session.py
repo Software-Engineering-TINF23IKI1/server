@@ -92,6 +92,42 @@ class GameSession:
             # Game Loop
             time.sleep(0.1)
 
+    def end_routine(self):
+        if not self.players:
+            self.cleanup()
+            return
+
+        # Send end-routine package
+        self.players.sort(key=lambda p: p.points)
+        scoreboard = [
+            {
+                "playername": player.name,
+                "score": player.points
+            } for player in self.players
+        ]
+
+        self.players[0].send_package(
+            bbc_server.packages.EndRoutinePackage(
+                score=self.players[0].points,
+                is_winner=True,
+                scoreboard=scoreboard
+            )
+        )
+        for player in self.players[1:]:
+            player.send_package(
+                bbc_server.packages.EndRoutinePackage(
+                    score=player.points,
+                    is_winner=True,
+                    scoreboard=scoreboard
+                )
+            )
+
+        # Wait for packages to be sent
+        time.sleep(0.5)
+
+        self.cleanup()
+        self._logger.info(f"Session [{self.code}] ended successfully")
+
     def add_player(self, player: Player) -> bool:
         """Adds a player to the game session scope. When a player enters the game session scope, player packets will
         be managed by the game session directly. Players can only be added to the scope, while the session is in the
