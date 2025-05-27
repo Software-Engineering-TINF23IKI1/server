@@ -33,4 +33,4 @@ class GameConfigFactory:
         """
         return GameConfig(end_condition_factory = self.__base_endcondition, point_earning=self.__point_earning_factory.create_point_earner(), shop=self.__shop,
                           base_currency=self.__base_currency, base_earn_rate=self.__base_earn_rate,
-                          base_modifier=self.__base_modifier)
+                          base_modifier=self.__base_modifier, base_scoreboard_top_players=self.__base_scoreboard_top_players)
