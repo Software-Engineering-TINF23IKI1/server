@@ -57,6 +57,15 @@ class TcpServer:
             except BlockingIOError:
                 time.sleep(1)
 
+            # Remove cleaned game sessions
+            cleaned_sessions = [
+                code for code, session in self.game_sessions.items()
+                if session.state == GameState.Cleaned
+            ]
+            for code in cleaned_sessions:
+                del self.game_sessions[code]
+                self._logger.info(f"Deleted game session with code [{code}]")
+
     def _package_listener(self):
         """Loop listening for packages on the players currently assigned to the Tcp_server
         """
