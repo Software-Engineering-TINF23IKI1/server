@@ -47,13 +47,15 @@ class PackageParsingExceptionPackage(ExceptionPackage):
         stage (str): package Parsing stage at which exception occured
         details (Optional[dict], optional): additional details. Defaults to None.
     """
-    def __init__(self, stage: str, details: Optional[dict] = None):
+    def __init__(self, stage: str, raw_msg: str, details: Optional[dict] = None):
         if not details:
             details = {}
         self._stage = stage
+        self._raw_msg = raw_msg
         self._details = details
         details = {
             "stage": stage,
+            "raw_msg": raw_msg,
             **details
         }
         super().__init__("PackageParsingException", details)
@@ -82,3 +84,24 @@ class InvalidGameCodeExceptionPackage(ExceptionPackage):
 
     def __repr__(self):
         return f"InvalidGameCodeExceptionPackage({self._code}, {str(self._details)})"
+
+
+class InvalidShopTransaction(ExceptionPackage):
+
+    def __init__(self, stage: str, upgrade_name: str, upgrade_tier: Optional[str] = None, details: Optional[dict] = None):
+        if not details:
+            details = {}
+        self._stage = stage
+        self._upgrade_name = upgrade_name
+        self._upgrade_tier = upgrade_tier
+        details = {
+            "stage": stage,
+            "upgrade_name": upgrade_name,
+            **details
+        }
+        if upgrade_tier:
+            details["upgrade_tier"] = upgrade_tier
+        super().__init__("InvalidShopTransaction", details)
+
+    def __repr__(self):
+        return f"InvalidShopTransaction({self._stage}, {self._upgrade_name}, {self._upgrade_tier}, {self._details})"
