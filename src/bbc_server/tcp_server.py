@@ -106,8 +106,8 @@ class TcpServer:
             player.client.shutdown()
 
         for session in self.game_sessions.values():
-            # Skip ended sessions
-            if session.state == GameState.Ended:
+            # Skip cleaned sessions
+            if session.state == GameState.Cleaned:
                 continue
 
             self._logger.info(f"Killing game session [{session.code}]...")

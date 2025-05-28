@@ -149,7 +149,11 @@ class GameSession:
     def cleanup(self):
         """Cleans all resources used by the game session directly
         """
+        if self.state == GameState.Cleaned:
+            return
         unregister_game_code(self.code)
 
         for player in self.players:
             player.client.shutdown()
+
+        self.state = GameState.Cleaned
