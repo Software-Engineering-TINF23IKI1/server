@@ -104,6 +104,7 @@ class GameSession:
 
 
     def game_loop(self):
+        _game_timer_interval = 0.1
         scoreboard = {}
         while self.state is GameState.Running:
             
@@ -115,6 +116,9 @@ class GameSession:
                             player.currency += received_package.count * player.click_modifier
                         case _:
                             pass  # Logging
+
+            for player in self.players:
+                player.currency += player.earn_rate * _game_timer_interval
 
 
             # Distribute Points
@@ -154,7 +158,7 @@ class GameSession:
             if (self.end_condition.is_game_end()):
                 self.state = GameState.Ended
 
-            time.sleep(0.1)
+            time.sleep(_game_timer_interval)
 
         if self.state is GameState.Ended:
             pass  # Run end routine
