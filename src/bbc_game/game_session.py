@@ -85,7 +85,8 @@ class GameSession:
     def init_game(self):
         if not len(self.players):
             self._logger.info("GameSession with 0 players detected.")
-            self.state = GameState.Kill
+            self.cleanup()
+            return
         for player in self.players:
             # Send Game Starting Package to players
             player.send_package(
@@ -164,8 +165,40 @@ class GameSession:
             time.sleep(_game_timer_interval)
 
         if self.state is GameState.Ended:
-            pass  # Run end routine
+            self.end_routine()
 
+
+    def end_routine(self):
+        # Send end-routine package
+        self.players.sort(key=lambda p: p.points, reverse=True)
+        scoreboard = [
+            {
+                "playername": player.name,
+                "score": player.points
+            } for player in self.players
+        ]
+
+        self.players[0].send_package(
+            bbc_server.packages.EndRoutinePackage(
+                score=self.players[0].points,
+                is_winner=True,
+                scoreboard=scoreboard
+            )
+        )
+        for player in self.players[1:]:
+            player.send_package(
+                bbc_server.packages.EndRoutinePackage(
+                    score=player.points,
+                    is_winner=False,
+                    scoreboard=scoreboard
+                )
+            )
+
+        # Wait for packages to be sent
+        time.sleep(0.5)
+
+        self.cleanup()
+        self._logger.info(f"Session [{self.code}] ended successfully")
 
     def add_player(self, player: Player) -> bool:
         """Adds a player to the game session scope. When a player enters the game session scope, player packets will
@@ -188,8 +221,13 @@ class GameSession:
     def cleanup(self):
         """Cleans all resources used by the game session directly
         """
+        if self.state == GameState.Cleaned:
+            return
+
         self._logger.info(f"Cleaning up game session {self.code}")
         unregister_game_code(self.code)
 
         for player in self.players:
             player.client.shutdown()
+
+        self.state = GameState.Cleaned
