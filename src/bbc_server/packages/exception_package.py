@@ -55,7 +55,7 @@ class PackageParsingExceptionPackage(ExceptionPackage):
         self._details = details
         details = {
             "stage": stage,
-            "raw_msg": raw_msg
+            "raw_msg": raw_msg,
             **details
         }
         super().__init__("PackageParsingException", details)
