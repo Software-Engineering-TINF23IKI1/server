@@ -28,6 +28,7 @@ class PointDistributer:
             return False
         else:
             self._tick_count = (int)(time_diff / self.point_interval)
+            self._tick_time = datetime.datetime.now()
             return True
 
     def earn_points(self, player_rank: int, current_points: float) -> float:

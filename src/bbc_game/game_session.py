@@ -1,15 +1,16 @@
+import bbc_game.end_condition
 from bbc_game.game_state import GameState
 from bbc_game.game_code import generate_game_code, unregister_game_code
 import bbc_server.packages
 from threading import Thread
 from bbc_server import Player
-from bbc_server._typing import BBCPackage
 from bbc_server.server_logging import SessionLogger
 import bbc_server
 import time
 import bbc_game.configs
 
 import bbc_server.packages
+import bbc_server.packages.game_update_package
 
 class GameSession:
     def __init__(self):
@@ -19,11 +20,12 @@ class GameSession:
         self.players: list[Player] = []
         self.state = GameState.Preperation
 
-        self.point_earn_system = None
-        self.end_condition = None
-        self.shop = None
-
         self.game_config = bbc_game.configs.default_game_config_factory.create_game_config()
+
+        self.point_earn_system = None
+        self.end_condition_factory = self.game_config.endcondition_factory
+
+        self.shop = self.game_config.shop
 
         # Start the game lobby loop
         self.thread = Thread(target=self.lobby_loop)
@@ -48,8 +50,9 @@ class GameSession:
                             pass  # Logging
 
             # Sending Lobby Status
-            player_list = [{"playername": inner_player.name, "is-ready": inner_player.is_ready}
-                           for inner_player in self.players]
+            player_list = [
+                {"playername": inner_player.name, "is-ready": inner_player.is_ready}
+                for inner_player in self.players]
             for player in self.players:
                 player.send_package(
                     bbc_server.packages.LobbyStatusPackage(
@@ -60,37 +63,109 @@ class GameSession:
 
 
             all_players_ready = all(player["is-ready"] for player in player_list)
-            # Icrease iterator if all Players are ready
+            # Increase iterator if all Players are ready
             if all_players_ready:
                 loop_iteration += 1
 
             if not all_players_ready:
                 loop_iteration = 0  # Reset Loop Iteration Counter so waiting for all players restarts
 
-            if all_players_ready and loop_iteration >= 400:
+            if all_players_ready and loop_iteration >= 3:
                 self.state = GameState.Running
 
 
             time.sleep(0.1)
 
         if self.state == GameState.Running:
-            for player in self.players:
-                # Send Game Starting Package to players
-                player.send_package(
-                    bbc_server.packages.GameStartPackage()
-                )
-                # Update player values according to game config
-                player.currency = self.game_config.base_currency
-                player.earn_rate = self.game_config.base_earn_rate
-                player._click_modifier = self.game_config.base_modifier
-
+            self.init_game()
             self.game_loop()
+            
+
+
+    def init_game(self):
+        if not len(self.players):
+            self._logger.info("GameSession with 0 players detected.")
+            self.state = GameState.Kill
+        for player in self.players:
+            # Send Game Starting Package to players
+            player.send_package(
+                bbc_server.packages.GameStartPackage()
+            )
+            # Update player values according to game config
+            player.currency = self.game_config.base_currency
+            player.earn_rate = self.game_config.base_earn_rate
+            player._click_modifier = self.game_config.base_modifier
+            player.shop = self.game_config.shop()
+
+        self._logger.info(f"Session [{self.code}] switched state to running")
+
+
+        self.end_condition = self.game_config.endcondition_factory.create_EndCondition()
+        if isinstance(self.end_condition,bbc_game.end_condition.PointBasedEndCondition):
+            self.end_condition.add_players(players=self.players)
+
 
 
     def game_loop(self):
+        _game_timer_interval = 0.1
+        scoreboard = {}
         while self.state is GameState.Running:
-            # Game Loop
-            time.sleep(0.1)
+            
+            # Read Player packages
+            for player in self.players:
+                while received_package := player.read_package():
+                    match received_package:
+                        case bbc_server.packages.PlayerClicksPackage():
+                            player.currency += received_package.count * player.click_modifier
+                        case _:
+                            pass  # Logging
+
+            for player in self.players:
+                player.currency += player.earn_rate * _game_timer_interval
+
+
+            # Distribute Points
+            if self.game_config.point_earning.tick():
+                for rank, player in enumerate(sorted(self.players, key=lambda p: p.currency, reverse=True)):
+                    player.points = self.game_config.point_earning.earn_points(rank + 1, player.points)
+                    
+            scoreboard = {player: player.points for player in self.players}
+
+            top_players = sorted(
+            scoreboard.items(),
+            key=lambda kv: kv[1],
+            reverse=True
+            )[:self.game_config.base_scoreboard_top_players]
+
+
+            scoreboard_array = [
+                {
+                    "playername": player.name,
+                    "score": score
+                }
+                for player, score in top_players
+            ]
+
+            # Send game-update package to each player
+            for player in self.players:
+                player.send_package(
+                    bbc_server.packages.GameUpdatePackage(
+                        player.currency,
+                        player.points,
+                        scoreboard_array
+                    )
+                )
+
+
+            # Check end condition
+            if (self.end_condition.is_game_end()):
+                self.state = GameState.Ended
+
+            time.sleep(_game_timer_interval)
+
+        if self.state is GameState.Ended:
+            pass  # Run end routine
+
 
     def end_routine(self):
         if not self.players:
@@ -151,6 +226,8 @@ class GameSession:
         """
         if self.state == GameState.Cleaned:
             return
+
+        self._logger.info(f"Cleaning up game session {self.code}")
         unregister_game_code(self.code)
 
         for player in self.players:
