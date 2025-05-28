@@ -104,7 +104,7 @@ class Player:
     def click_modifier(self, click_modifier: float) -> float:
         self._click_modifier = click_modifier
 
-    property
+    @property
     def shop(self) -> ShopType:
         return self._shop
 
