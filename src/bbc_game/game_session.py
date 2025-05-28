@@ -25,7 +25,7 @@ class GameSession:
         self.point_earn_system = None
         self.end_condition_factory = self.game_config.endcondition_factory
 
-        self.shop = None
+        self.shop = self.game_config.shop
 
         # Start the game lobby loop
         self.thread = Thread(target=self.lobby_loop)
@@ -77,24 +77,30 @@ class GameSession:
             time.sleep(0.1)
 
         if self.state == GameState.Running:
-            for player in self.players:
-                # Send Game Starting Package to players
-                player.send_package(
-                    bbc_server.packages.GameStartPackage()
-                )
-                # Update player values according to game config
-                player.currency = self.game_config.base_currency
-                player.earn_rate = self.game_config.base_earn_rate
-                player._click_modifier = self.game_config.base_modifier
-
-            self._logger.info(f"Session [{self.code}] switched state to running")
-
-
-            self.end_condition = self.game_config.endcondition_factory.create_EndCondition()
-            if isinstance(self.end_condition,bbc_game.end_condition.PointBasedEndCondition):
-                self.end_condition.add_players(players=self.players)
-
+            self.init_game()
             self.game_loop()
+            
+
+
+    def init_game(self):
+        for player in self.players:
+            # Send Game Starting Package to players
+            player.send_package(
+                bbc_server.packages.GameStartPackage()
+            )
+            # Update player values according to game config
+            player.currency = self.game_config.base_currency
+            player.earn_rate = self.game_config.base_earn_rate
+            player._click_modifier = self.game_config.base_modifier
+            player.shop = self.game_config.shop
+
+        self._logger.info(f"Session [{self.code}] switched state to running")
+
+
+        self.end_condition = self.game_config.endcondition_factory.create_EndCondition()
+        if isinstance(self.end_condition,bbc_game.end_condition.PointBasedEndCondition):
+            self.end_condition.add_players(players=self.players)
+
 
 
     def game_loop(self):

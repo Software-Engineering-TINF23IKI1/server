@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from bbc_server.tcp_client import TcpClient
 
 from bbc_server._typing import BBCPackage
+from bbc_game._typing import ShopType
 
 
 class Player:
@@ -38,6 +39,7 @@ class Player:
         self._gamecode = gamecode
         self._logger = PlayerLogger(self._name, self._gamecode, self._client.address[0], self._client.address[1])
         self._client.logger = self._logger  # sharing the player logger with the underlying TcpClient
+        self._shop = None
 
     @property
     def client(self) -> TcpClient:
@@ -101,6 +103,14 @@ class Player:
     @click_modifier.setter
     def click_modifier(self, click_modifier: float) -> float:
         self._click_modifier = click_modifier
+
+    property
+    def shop(self) -> ShopType:
+        return self._shop
+
+    @shop.setter
+    def shop(self, shop: ShopType):
+        self._shop = shop
 
 
     def read_package(self, **kwargs) -> Optional[BBCPackage]:
