@@ -165,7 +165,7 @@ class GameSession:
             time.sleep(_game_timer_interval)
 
         if self.state is GameState.Ended:
-            pass  # Run end routine
+            self.end_routine()
 
 
     def end_routine(self):
@@ -189,7 +189,7 @@ class GameSession:
             player.send_package(
                 bbc_server.packages.EndRoutinePackage(
                     score=player.points,
-                    is_winner=True,
+                    is_winner=False,
                     scoreboard=scoreboard
                 )
             )
