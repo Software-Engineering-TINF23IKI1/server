@@ -9,9 +9,9 @@ class Upgrade(ABC):
         description (Optional[str], optional): description of the upgrade. Defaults to None.
     """
 
-    def __init__(self, name: Optional[str] = None, description: Optional[str] = None):
+    def __init__(self, name: Optional[str] = None, description: str = ""):
         self.name = name
-        self.description = description if description else ""
+        self.description = description
 
     @abstractmethod
     def clone(self):
