@@ -170,7 +170,7 @@ class GameSession:
 
     def end_routine(self):
         # Send end-routine package
-        self.players.sort(key=lambda p: p.points)
+        self.players.sort(key=lambda p: p.points, reverse=True)
         scoreboard = [
             {
                 "playername": player.name,
