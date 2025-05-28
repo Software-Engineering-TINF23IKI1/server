@@ -83,6 +83,9 @@ class GameSession:
 
 
     def init_game(self):
+        if not len(self.players):
+            self._logger.info("GameSession with 0 players detected.")
+            self.state = GameState.Kill
         for player in self.players:
             # Send Game Starting Package to players
             player.send_package(
@@ -92,7 +95,7 @@ class GameSession:
             player.currency = self.game_config.base_currency
             player.earn_rate = self.game_config.base_earn_rate
             player._click_modifier = self.game_config.base_modifier
-            player.shop = self.game_config.shop
+            player.shop = self.game_config.shop()
 
         self._logger.info(f"Session [{self.code}] switched state to running")
 
@@ -185,6 +188,7 @@ class GameSession:
     def cleanup(self):
         """Cleans all resources used by the game session directly
         """
+        self._logger.info(f"Cleaning up game session {self.code}")
         unregister_game_code(self.code)
 
         for player in self.players:

@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from bbc_server.tcp_client import TcpClient
 
 from bbc_server._typing import BBCPackage
-from bbc_game._typing import ShopType
+from bbc_game.shop import BaseShop
 
 
 class Player:
@@ -105,11 +105,11 @@ class Player:
         self._click_modifier = click_modifier
 
     @property
-    def shop(self) -> ShopType:
+    def shop(self) -> BaseShop:
         return self._shop
 
     @shop.setter
-    def shop(self, shop: ShopType):
+    def shop(self, shop: BaseShop):
         self._shop = shop
 
 
