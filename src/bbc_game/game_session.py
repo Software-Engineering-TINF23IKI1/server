@@ -85,7 +85,8 @@ class GameSession:
     def init_game(self):
         if not len(self.players):
             self._logger.info("GameSession with 0 players detected.")
-            self.state = GameState.Kill
+            self.cleanup()
+            return
         for player in self.players:
             # Send Game Starting Package to players
             player.send_package(
@@ -168,10 +169,6 @@ class GameSession:
 
 
     def end_routine(self):
-        if not self.players:
-            self.cleanup()
-            return
-
         # Send end-routine package
         self.players.sort(key=lambda p: p.points)
         scoreboard = [
