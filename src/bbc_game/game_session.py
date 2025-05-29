@@ -86,6 +86,8 @@ class GameSession:
         if not len(self.players):
             self._logger.info("GameSession with 0 players detected.")
             self.state = GameState.Kill
+        
+        shop_broadcast_pkg = bbc_server.packages.create_ShopBroadcastPackage_from_shop(self.game_config.shop)
         for player in self.players:
             # Send Game Starting Package to players
             player.send_package(
@@ -96,6 +98,7 @@ class GameSession:
             player.earn_rate = self.game_config.base_earn_rate
             player._click_modifier = self.game_config.base_modifier
             player.shop = self.game_config.shop()
+            player.send_package(shop_broadcast_pkg)
 
         self._logger.info(f"Session [{self.code}] switched state to running")
 
@@ -117,6 +120,8 @@ class GameSession:
                     match received_package:
                         case bbc_server.packages.PlayerClicksPackage():
                             player.currency += received_package.count * player.click_modifier
+                        case bbc_server.packages.ShopPurchaseRequestPackage():
+                            player.process_shop_transaction(received_package.upgrade_name, received_package.tier)
                         case _:
                             pass  # Logging
 

@@ -6,7 +6,8 @@ if TYPE_CHECKING:
     from bbc_server.tcp_client import TcpClient
 
 from bbc_server._typing import BBCPackage
-from bbc_game.shop import BaseShop
+from bbc_game.shop import BaseShop, TieredUpgrade, ClickUpgrade, GainUpgrade
+from bbc_server.packages import InvalidShopTransaction, ShopPurchaseConfirmationPackage
 
 
 class Player:
@@ -137,6 +138,48 @@ class Player:
         """small function to update the logger"""
         self._logger = PlayerLogger(self._name, self.gamecode, self._client.address[0], self._client.address[1])
         self._client.logger = self._logger
+
+    def process_shop_transaction(self, upgrade_name: str, tier: Optional[int] = None):
+        if upgrade_name not in self.shop.upgrades.keys():
+            self._logger.info(f"Invalid ShopPurchaseTransaction. stage=upgrade_exists, original request: {upgrade_name=}, {tier=}.")
+            self.send_package(InvalidShopTransaction("upgrade_exists", upgrade_name, tier))
+            return
+
+        upgrade = self.shop.upgrades.get(upgrade_name)
+        if tier and (not isinstance(upgrade, TieredUpgrade) or tier > upgrade.max_tier or tier != upgrade.current_tier):
+            self._logger.info(f"Invalid ShopPurchaseTransaction. stage=invalid_tier, original request: {upgrade_name=}, {tier=}.")
+            self.send_package(InvalidShopTransaction("invalid_tier", upgrade_name, tier))
+            return
+        if isinstance(upgrade, TieredUpgrade):
+            curr = upgrade.current_upgrade
+            upgrade_price = curr.price
+            if self.currency < upgrade_price:
+                self._logger.info(f"Invalid ShopPurchaseTransaction. stage=price_check, original request: {upgrade_name=}, {tier=}.")
+                self.send_package(InvalidShopTransaction("price_check", upgrade_name, tier))
+                return
+            else:
+                self.currency -= upgrade_price
+                if isinstance(curr, ClickUpgrade):
+                    self.click_modifier = curr.apply_upgrade(self.click_modifier)
+                    self._logger.debug(f"purchased upgrade {upgrade_name=}, {tier=}. New click_modifier={self.click_modifier}.")
+                elif isinstance(curr, GainUpgrade):
+                    self.earn_rate = curr.apply_upgrade(self.earn_rate)
+                    self._logger.debug(f"purchased upgrade {upgrade_name=}, {tier=}. New earn_rate={self.earn_rate}.")
+                upgrade.upgrade()
+        else:
+            if self.currency < upgrade.price:
+                self._logger.info(f"Invalid ShopPurchaseTransaction. stage=price_check, original request: {upgrade_name=}, {tier=}.")
+                self.send_package(InvalidShopTransaction("price_check", upgrade_name, tier))
+                return
+            if isinstance(upgrade, ClickUpgrade):
+                self.click_modifier = upgrade.apply_upgrade(self.click_modifier)
+                self._logger.debug(f"purchased upgrade {upgrade_name=}, {tier=}. New click_modifier={self.click_modifier}.")
+            elif isinstance(upgrade, GainUpgrade):
+                self.earn_rate = upgrade.apply_upgrade(self.earn_rate)
+                self._logger.debug(f"purchased upgrade {upgrade_name=}, {tier=}. New earn_rate={self.earn_rate}.")
+
+        self.send_package(ShopPurchaseConfirmationPackage(name=upgrade_name, tier=tier))
+
 
     @property
     def logger(self) -> PlayerLogger:
