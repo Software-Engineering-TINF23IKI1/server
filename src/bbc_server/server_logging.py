@@ -38,6 +38,7 @@ class ServerLogger(BaseAdapter):
     def __init__(self, logger: Optional[logging.Logger] = None):
         super().__init__(logger, source="Server")
 
+
 class SessionLogger(BaseAdapter):
     """Adapter for individual game sessions
 
@@ -48,6 +49,7 @@ class SessionLogger(BaseAdapter):
 
     def __init__(self, gamecode: Optional[str] = None, logger: Optional[logging.Logger] = None):
         super().__init__(logger, source="Session", gamecode=gamecode)
+
 
 class PlayerLogger(BaseAdapter):
     """Adapter for individual players
@@ -62,7 +64,6 @@ class PlayerLogger(BaseAdapter):
 
     def __init__(self, name: Optional[str] = None, gamecode: Optional[str] = None, ip: Optional[str] = None, port: Optional[int] = None, logger: Optional[logging.Logger] = None):
         super().__init__(logger, source="Player", name=name, session=gamecode, ip=ip, port=port)
-
 
 
 class DetailedFormatter(logging.Formatter):
@@ -83,6 +84,14 @@ class DetailedFormatter(logging.Formatter):
         return super().format(record)
 
 
+class UnknownSourceFilter(logging.Filter):
+    """Filter out logs that come from unknown sources."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        raw_source = getattr(record, "raw_source", "Unknown")
+        return raw_source != "Unknown"
+
+
 formatter = DetailedFormatter(
     fmt="[%(asctime)s.%(msecs)03d] [%(levelname)s] [source=%(source)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
@@ -99,6 +108,12 @@ if not os.path.isfile(filepath):
 file_handler = logging.FileHandler(str(CONFIG.get("logging", "FILE")))
 file_handler.setFormatter(formatter)
 file_handler.setLevel(str(CONFIG.get("logging", "FILE_LEVEL")))
+
+
+filter = UnknownSourceFilter()
+stream_handler.addFilter(filter)
+file_handler.addFilter(filter)
+
 
 ROOT_LOGGER = logging.getLogger()
 ROOT_LOGGER.setLevel(logging.DEBUG)

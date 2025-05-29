@@ -99,7 +99,7 @@ class InvalidShopTransaction(ExceptionPackage):
             "upgrade_name": upgrade_name,
             **details
         }
-        if upgrade_tier:
+        if upgrade_tier is not None:
             details["upgrade_tier"] = upgrade_tier
         super().__init__("InvalidShopTransaction", details)
 

@@ -23,7 +23,7 @@ class ShopPurchaseRequestPackage(BasePackage):
         dict_repr = {
             "upgrade-name": self.__upgrade_name
             }
-        if self.__tier:
+        if self.__tier is not None:
             dict_repr["tier"] = self.__tier
         return dict_repr
 

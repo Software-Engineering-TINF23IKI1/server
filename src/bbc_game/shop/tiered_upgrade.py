@@ -24,7 +24,7 @@ class TieredUpgrade(Upgrade):
 
     @property
     def current_tier(self) -> int:
-        """returns the current tier is"""
+        """returns the current tier (currently 'offered')"""
         return self._current_tier
     
     @property
@@ -32,6 +32,7 @@ class TieredUpgrade(Upgrade):
         """returns the max tier"""
         return self._max_tier
     
+    @property
     def current_upgrade(self) -> SingleUpgrade:
         """returns the SingleUpgrade object of the current tier (useful for displaying name, price etc.)"""
         return self._upgrades[self._current_tier]
