@@ -24,9 +24,27 @@ class PackageTest(unittest.TestCase):
 
     def test_002_GameUpdatePackage_playerlist_validation(self):
         """test validation of top-players on GameUpdatePackage"""
-        self.assertRaises(ValueError, GameUpdatePackage, currency=45, score=10, top_players=[{}])  # empty dict
+        # empty dict
+        self.assertRaises(
+            ValueError,
+            GameUpdatePackage,
+            currency=45,
+            score=10,
+            click_modifier=2,
+            passive_gain=0,
+            top_players=[{}],
+        )
+
         # missing attributes on second dict
-        self.assertRaises(ValueError, GameUpdatePackage, currency=45, score=10, top_players=[{"playername": "player1", "score": 10}, {}])
+        self.assertRaises(
+            ValueError,
+            GameUpdatePackage,
+            currency=45,
+            score=10,
+            click_modifier=2,
+            passive_gain=0,
+            top_players=[{"playername": "player1", "score": 10}, {}],
+        )
 
     def test_002_LobbyStatusPackage_playerlist_validation(self):
         """test validation of players list on LobbyStatusPackage"""

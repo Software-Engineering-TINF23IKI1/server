@@ -159,6 +159,8 @@ class GameSession:
                     bbc_server.packages.GameUpdatePackage(
                         player.currency,
                         player.points,
+                        player.click_modifier,
+                        player.earn_rate,
                         scoreboard_array
                     )
                 )

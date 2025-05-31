@@ -74,7 +74,7 @@ class DecoderTest(unittest.TestCase):
 
     def test_010_decode_GameUpdatePackage(self):
         """test decoding the GameUpdatePackage"""
-        test_pkg = GameUpdatePackage(currency=10, score=25, top_players=[{"playername": "player1", "score": 25}])
+        test_pkg = GameUpdatePackage(currency=10, score=25, click_modifier=2, passive_gain=0, top_players=[{"playername": "player1", "score": 25}])
         parsed_pkg = Decoder.deserialize(test_pkg.to_json())
         self.assertTrue(test_pkg == parsed_pkg)
 
