@@ -342,6 +342,8 @@ This package is sent on a schedule and is customized per player.
     "body": {
         "currency": 4738.43,
         "score": 709.2,
+        "click-modifier": 2.0,
+        "passive-gain": 3.2,
         "top-players": [
             {
                 "playername": "p5",

@@ -5,22 +5,28 @@ class GameUpdatePackage(BasePackage):
     JSON_PARAM_MAP = {
         "currency": "currency",
         "score": "score",
+        "click-modifier": "click_modifier",
+        "passive-gain": "passive_gain",
         "top-players": "top_players"
     }
 
     N_TOP_PLAYERS = 5  # amount of players to show in the leaderboard
 
-    def __init__(self, currency: float, score: float, top_players: list[dict]):
+    def __init__(self, currency: float, score: float, click_modifier: float, passive_gain:float, top_players: list[dict]):
         """GameUpdatePackage
         see the package documentation for more information
 
         Args:
             currency (float): currency of the player
             score (float): score of the player
+            click_modifier: click modifier of the player
+            passive_gain: passive gain of the player
             top_players (list[dict]): list of top N players with their respective scores
         """
         self.__currency = currency
         self.__score = score
+        self.__click_modifier = click_modifier
+        self.__passive_gain = passive_gain
         if not self.is_top_player_list_valid(top_players):
             raise ValueError("player list is not valid")
         self.__top_players = top_players
@@ -45,6 +51,8 @@ class GameUpdatePackage(BasePackage):
         dict_repr = {
             "currency": self.__currency,
             "score": self.__score,
+            "click-modifier": self.__click_modifier,
+            "passive-gain": self.__passive_gain,
             "top-players": self.__top_players
         }
         return dict_repr
@@ -56,10 +64,18 @@ class GameUpdatePackage(BasePackage):
     @property
     def score(self) -> float:
         return self.__score
+    
+    @property
+    def click_modifier(self) -> float:
+        return self.__click_modifier
+    
+    @property
+    def passive_gain(self) -> float:
+        return self.__passive_gain
 
     @property
     def top_players(self) -> list[dict]:
         return self.__top_players
 
     def __repr__(self):
-        return f"GameUpdatePackage({self.currency}, {self.score}, {self.top_players})"
+        return f"GameUpdatePackage({self.currency}, {self.score}, {self.click_modifier}, {self.passive_gain}, {self.top_players})"
