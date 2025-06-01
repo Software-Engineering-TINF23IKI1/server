@@ -1,0 +1,32 @@
+@startuml
+title BBC Server - Use Case Diagram
+left to right direction
+
+actor Player
+
+rectangle "Game Server" {
+    (Connect to Server)
+    (Create Game Session)
+    (Join Game Session)
+    (Update Ready Status)
+    (Send Click)
+    (Shop Purchase Request)
+    (Broadcast Game State)
+
+    (Create Game Session) .> (Join Game Session) : <<include>>
+}
+
+Player --> (Connect to Server)
+Player --> (Create Game Session)
+Player --> (Join Game Session)
+Player --> (Update Ready Status)
+Player --> (Send Click)
+Player --> (Shop Purchase Request)
+
+' Representing internal periodic trigger
+note right of (Broadcast Game State)
+  Periodically triggered
+  by game loop timer
+end note
+
+@enduml
