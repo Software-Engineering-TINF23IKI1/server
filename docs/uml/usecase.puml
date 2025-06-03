@@ -2,7 +2,7 @@
 title BBC Server - Use Case Diagram
 left to right direction
 
-actor Player
+actor Client
 
 rectangle "Game Server" {
     (Connect to Server)
@@ -16,12 +16,12 @@ rectangle "Game Server" {
     (Create Game Session) .> (Join Game Session) : <<include>>
 }
 
-Player --> (Connect to Server)
-Player --> (Create Game Session)
-Player --> (Join Game Session)
-Player --> (Update Ready Status)
-Player --> (Send Click)
-Player --> (Shop Purchase Request)
+Client --> (Connect to Server)
+Client --> (Create Game Session)
+Client --> (Join Game Session)
+Client --> (Update Ready Status)
+Client --> (Send Click)
+Client --> (Shop Purchase Request)
 
 ' Representing internal periodic trigger
 note right of (Broadcast Game State)
