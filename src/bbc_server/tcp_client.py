@@ -48,7 +48,7 @@ class TcpClient:
                 try:
                     pkg = self._outgoing_queue.pop(0)
                     self._client.sendall((pkg + TcpClient.PACKET_SEPERATOR).encode())
-                except (ConnectionResetError, ConnectionAbortedError):
+                except:
                     if self._logger:
                         self._logger.info("lost connection")
                     self.is_running = False
@@ -66,7 +66,7 @@ class TcpClient:
 
         try:
             self._client.shutdown(socket.SHUT_RDWR)
-        except ConnectionResetError:
+        except:
             pass
         self._client.close()
         self._logger.debug("Closing client.")
