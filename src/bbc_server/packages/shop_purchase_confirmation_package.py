@@ -23,7 +23,7 @@ class ShopPurchaseConfirmationPackage(BasePackage):
         dict_repr = {
             "name": self.__name
             }
-        if self.__tier:
+        if self.__tier is not None:
             dict_repr["tier"] = self.__tier
         return dict_repr
 
