@@ -8,7 +8,7 @@ def deserialize(input_str: str) -> BBCPackage:
     # 1. check for valid JSON
     try:
         parsed_dict = json.loads(input_str)
-    except json.JSONDecodeError as e:
+    except (json.JSONDecodeError, TypeError) as e:
         raise e
 
     # 2. check for valid type

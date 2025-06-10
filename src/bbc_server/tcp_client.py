@@ -138,7 +138,7 @@ class TcpClient:
             raw_str = self.read_string()
             try:
                 package = Decoder.deserialize(raw_str)
-            except JSONDecodeError as e:
+            except (JSONDecodeError, TypeError) as e:
                 self.send_package(PackageParsingExceptionPackage(stage="JSON", raw_msg=str(e)))
                 self._logger.debug(f"Invalid package, stage=JSON, msg={raw_str}")
             except InvalidPackageTypeException as e:
