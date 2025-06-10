@@ -1,4 +1,5 @@
 from bbc_game.shop import TieredUpgrade, ClickUpgrade, GainUpgrade, BaseShop
+import random
 
 
 class DefaultShop(BaseShop):
@@ -83,6 +84,12 @@ class DefaultShop(BaseShop):
             ],
             "Insane Passive Income",
             "increases passive gain by 50 per level"
+        ),
+        GainUpgrade(
+            5_000,
+            lambda x: x * random.randint(0, 1) * 2,
+            "Gamblers Fate",
+            "Doubles the Passive Income or sets the Passive Income to 0 with a 50% chance"
         ),
         GainUpgrade(
             10_000,
