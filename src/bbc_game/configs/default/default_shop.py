@@ -99,7 +99,7 @@ class DefaultShop(BaseShop):
             5_000,
             lambda x: x * random.randint(0, 1) * 2,
             "Banana Roulette",
-            "Double your passive income — or lose it all! 50% chance to multiply your bananas, 50% chance to drop to zero. Play it if you dare."
+            "Double your passive income — or lose it all! 50% chance to multiply your income, 50% chance to drop to zero. Play it if you dare."
         ),
         TieredUpgrade(
             [
