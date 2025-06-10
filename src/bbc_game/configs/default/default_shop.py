@@ -20,7 +20,17 @@ class DefaultShop(BaseShop):
                 ClickUpgrade(1_500, lambda x: x + 1, "Better Clicks XII"),
                 ClickUpgrade(2_000, lambda x: x + 1, "Better Clicks XIII"),
                 ClickUpgrade(2_500, lambda x: x + 1, "Better Clicks XIV"),
-                ClickUpgrade(3_000, lambda x: x + 1, "Better Clicks XV")
+                ClickUpgrade(3_000, lambda x: x + 1, "Better Clicks XV"),
+                ClickUpgrade(5_000, lambda x: x + 1, "Better Clicks XVI"),
+                ClickUpgrade(7_500, lambda x: x + 1, "Better Clicks XVII"),
+                ClickUpgrade(11_000, lambda x: x + 1, "Better Clicks XVIII"),
+                ClickUpgrade(17_000, lambda x: x + 1, "Better Clicks XIX"),
+                ClickUpgrade(21_000, lambda x: x + 1, "Better Clicks XX"),
+                ClickUpgrade(25_000, lambda x: x + 1, "Better Clicks XXI"),
+                ClickUpgrade(32_000, lambda x: x + 1, "Better Clicks XXII"),
+                ClickUpgrade(40_000, lambda x: x + 1, "Better Clicks XXIII",
+                ClickUpgrade(50_000, lambda x: x + 1, "Better Clicks XXIV"),
+                ClickUpgrade(65_000, lambda x: x + 1, "Better Clicks XXV"),
             ],
             "Better Clicks",
             "increases click modifier by 1 per level"
