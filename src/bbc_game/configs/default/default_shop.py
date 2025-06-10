@@ -91,16 +91,20 @@ class DefaultShop(BaseShop):
             "Gamblers Fate",
             "Doubles the Passive Income or sets the Passive Income to 0 with a 50% chance"
         ),
-        GainUpgrade(
-            10_000,
-            lambda x: x * 2,
+        TieredUpgrade(
+            [
+                GainUpgrade(2_000, lambda x: x * 1, "Golden Income I"),
+                GainUpgrade(10_000, lambda x: x * 2, "Golden Income II"),
+                GainUpgrade(50_000, lambda x: x * 3, "Golden Income III"),
+                GainUpgrade(200_000, lambda x: x * 4, "Golden Income IV"),
+                GainUpgrade(1_000_000, lambda x: x * 5, "Golden Income V"),
+                GainUpgrade(10_000_000, lambda x: x * 6, "Golden Income VI"),
+                GainUpgrade(100_000_000, lambda x: x * 7, "Golden Income VII"),
+                GainUpgrade(1_500_000_000, lambda x: x * 8, "Golden Income VIII"),
+                GainUpgrade(50_000_000_000, lambda x: x * 9, "Golden Income IX"),
+                GainUpgrade(1_000_000_000_000, lambda x: x * 10, "Golden Income X"),
+            ],
             "Golden Income",
-            "Doubles the current passive income"
-        ),
-        GainUpgrade(
-            10_000,
-            lambda x: x * 4,
-            "Ultimate Income",
-            "Quadruples the current passive income"
+            "Multiplies you passive income with the current tier of this upgrade"
         )
     ]
