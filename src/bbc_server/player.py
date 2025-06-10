@@ -171,6 +171,7 @@ class Player:
                 self._logger.info(f"Invalid ShopPurchaseTransaction. stage=price_check, original request: {upgrade_name=}, {tier=}.")
                 self.send_package(InvalidShopTransaction("price_check", upgrade_name, tier))
                 return
+            self.currency -= upgrade.price
             if isinstance(upgrade, ClickUpgrade):
                 self.click_modifier = upgrade.apply_upgrade(self.click_modifier)
                 self._logger.debug(f"purchased upgrade {upgrade_name=}, {tier=}. New click_modifier={self.click_modifier}.")
