@@ -60,7 +60,7 @@ class DefaultShop(BaseShop):
                 GainUpgrade(2_500, lambda x: x + 1, "Intern Monkey IX"),
                 GainUpgrade(3_500, lambda x: x + 1, "Intern Monkey X")
             ],
-            "Intern Monkey",
+            "Monkey Intern",
             "Unpaid, overqualified, but still brings in a banana every second"
         ),
         TieredUpgrade(
